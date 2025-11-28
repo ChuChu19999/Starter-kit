@@ -1,6 +1,6 @@
 import io
 from datetime import date, datetime
-from typing import Any
+from typing import Any, Awaitable, Callable, Optional
 import pendulum
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
@@ -89,3 +89,76 @@ def create_excel_file(
     except Exception as e:
         logger.error(f"Ошибка при создании Excel файла: {str(e)}", exc_info=True)
         raise ValueError(f"Ошибка при сохранении Excel файла: {str(e)}")
+
+
+def export_to_excel_from_dicts(
+    headers: list[str],
+    data: list[dict[str, Any]],
+    sheet_name: str = "Данные",
+    header_to_key_mapping: Optional[dict[str, str]] = None,
+) -> io.BytesIO:
+    """
+    Создает Excel файл из списка словарей.
+    """
+    try:
+        if header_to_key_mapping is None:
+            header_to_key_mapping = {header: header for header in headers}
+
+        excel_data = []
+        for item in data:
+            row = []
+            for header in headers:
+                key = header_to_key_mapping.get(header, header)
+                value = item.get(key)
+                row.append(value)
+            excel_data.append(row)
+
+        return create_excel_file(headers, excel_data, sheet_name)
+    except Exception as e:
+        logger.error(f"Ошибка при экспорте данных в Excel: {str(e)}", exc_info=True)
+        raise ValueError(f"Ошибка при экспорте данных в Excel: {str(e)}")
+
+
+async def export_to_excel_async(
+    headers: list[str],
+    data_fetcher: Callable[..., Awaitable[list[Any]]],
+    data_transformer: Callable[[Any], dict[str, Any]],
+    sheet_name: str = "Данные",
+    header_to_key_mapping: Optional[dict[str, str]] = None,
+    **filter_kwargs: Any,
+) -> io.BytesIO:
+    """
+    Универсальная функция для экспорта данных в Excel с поддержкой фильтров.
+
+    Получает данные через async функцию (которая применяет фильтры),
+    преобразует их в словари и создает Excel файл.
+    """
+    try:
+        logger.info(
+            f"Начало экспорта в Excel. Лист: {sheet_name}, " f"Фильтры: {filter_kwargs}"
+        )
+
+        raw_data = await data_fetcher(**filter_kwargs)
+
+        data_dicts = []
+        for idx, item in enumerate(raw_data):
+            try:
+                data_dicts.append(data_transformer(item))
+            except Exception as e:
+                logger.error(
+                    f"Ошибка при преобразовании элемента {idx}: {str(e)}",
+                    exc_info=True,
+                )
+                raise
+
+        logger.info(f"Получено {len(data_dicts)} записей для экспорта")
+
+        return export_to_excel_from_dicts(
+            headers=headers,
+            data=data_dicts,
+            sheet_name=sheet_name,
+            header_to_key_mapping=header_to_key_mapping,
+        )
+    except Exception as e:
+        logger.error(f"Ошибка при экспорте данных в Excel: {str(e)}", exc_info=True)
+        raise ValueError(f"Ошибка при экспорте данных в Excel: {str(e)}")
