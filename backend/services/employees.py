@@ -1,0 +1,138 @@
+from typing import Any, Optional
+import httpx
+import pendulum
+from core.config import settings
+from core.http_clients import get_hr_client
+from core.logger import logger
+
+_cache: dict[str, tuple[Any, pendulum.DateTime]] = {}
+CACHE_TTL = pendulum.Duration(minutes=10)
+
+
+async def search_employees_by_fio(
+    search_fio: str, include_photo: bool = True
+) -> list[dict[str, Any]]:
+    """
+    Поиск сотрудников по ФИО через HR API.
+    """
+    if not search_fio or len(search_fio) < 3:
+        return []
+
+    if not settings.HR_API_URL:
+        logger.error("HR_API_URL не настроен")
+        raise ValueError("HR_API_URL не настроен")
+
+    try:
+        url = f"{settings.HR_API_URL}/api/v2/employee/by-fio/{search_fio}?includeDismissed=true&recordsNumber=10&includePhoto={str(include_photo).lower()}"
+        headers = {"Content-Type": "application/json"}
+
+        client = await get_hr_client()
+        response = await client.get(url, headers=headers)
+        response.raise_for_status()
+        employees_data = response.json()
+
+        if not isinstance(employees_data, list):
+            if isinstance(employees_data, dict):
+                employees_data = [employees_data]
+            else:
+                employees_data = []
+
+        return employees_data
+
+    except httpx.RequestError as e:
+        logger.error(f"Ошибка при обращении к HR API: {str(e)}")
+        raise
+    except Exception as e:
+        logger.error(f"Внутренняя ошибка сервера: {str(e)}")
+        raise
+
+
+async def get_employee_by_hash(
+    hash_md5: str, include_photo: bool = True
+) -> Optional[dict[str, Any]]:
+    """
+    Получение информации о сотруднике по hashMd5 через HR API.
+    """
+    if not hash_md5:
+        return None
+
+    cache_key = f"hr_employee_{hash_md5}_photo_{include_photo}"
+    if cache_key in _cache:
+        cached_data, cached_time = _cache[cache_key]
+        if pendulum.now() - cached_time < CACHE_TTL:
+            return cached_data
+        else:
+            del _cache[cache_key]
+
+    if not settings.HR_API_URL:
+        logger.error("HR_API_URL не настроен")
+        raise ValueError("HR_API_URL не настроен")
+
+    try:
+        url = f"{settings.HR_API_URL}/api/v2/employee/by-hash/{hash_md5}?includeDismissed=true&recordsNumber=1&includePhoto={str(include_photo).lower()}"
+        headers = {"Content-Type": "application/json"}
+
+        client = await get_hr_client()
+        response = await client.get(url, headers=headers)
+        response.raise_for_status()
+        employee_data = response.json()
+
+        _cache[cache_key] = (employee_data, pendulum.now())
+        return employee_data
+
+    except httpx.RequestError as e:
+        logger.error(f"Ошибка при обращении к HR API: {str(e)}")
+        raise
+    except Exception as e:
+        logger.error(f"Внутренняя ошибка сервера: {str(e)}")
+        raise
+
+
+async def get_employees_by_hashes(
+    hashes_md5: list[str], include_photo: bool = False
+) -> dict[str, dict[str, Any]]:
+    """
+    Получение информации о сотрудниках по массиву hashMd5 через HR API (батч-запрос).
+    """
+    if not hashes_md5 or len(hashes_md5) == 0:
+        return {}
+
+    if not settings.HR_API_URL:
+        logger.error("HR_API_URL не настроен")
+        raise ValueError("HR_API_URL не настроен")
+
+    try:
+        url = f"{settings.HR_API_URL}/api/v2/employee/by-hashes/"
+        headers = {"Content-Type": "application/json"}
+        payload = {
+            "hashesMd5": hashes_md5,
+            "includeExtended": False,
+            "includePhoto": include_photo,
+            "includeExp": False,
+            "includeDismissed": True,
+            "includeAppointments": False,
+        }
+
+        client = await get_hr_client()
+        response = await client.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        employees_data = response.json()
+
+        result = {}
+        if isinstance(employees_data, list):
+            for employee in employees_data:
+                if isinstance(employee, dict) and "hashMd5" in employee:
+                    hash_md5 = employee.get("hashMd5")
+                    if hash_md5:
+                        result[hash_md5] = employee
+                        cache_key = f"hr_employee_{hash_md5}_photo_{include_photo}"
+                        _cache[cache_key] = (employee, pendulum.now())
+
+        return result
+
+    except httpx.RequestError as e:
+        logger.error(f"Ошибка при обращении к HR API: {str(e)}")
+        raise
+    except Exception as e:
+        logger.error(f"Внутренняя ошибка сервера: {str(e)}")
+        raise

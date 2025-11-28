@@ -34,11 +34,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Files
-*.xlsx
-
 # ENV
-scripts/.env
 .env
 .env.local
 .env.development.local
