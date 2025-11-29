@@ -1,12 +1,15 @@
 from typing import Any, Optional
 import httpx
 import pendulum
+from cachetools import TTLCache
 from core.config import settings
 from core.http_clients import get_hr_client
 from core.logger import logger
 
-_cache: dict[str, tuple[Any, pendulum.DateTime]] = {}
-CACHE_TTL = pendulum.Duration(minutes=10)
+CACHE_MAX_SIZE = 1000
+CACHE_TTL_SECONDS = 600
+
+_cache: TTLCache[str, Any] = TTLCache(maxsize=CACHE_MAX_SIZE, ttl=CACHE_TTL_SECONDS)
 
 
 async def search_employees_by_fio(
@@ -58,11 +61,7 @@ async def get_employee_by_hash(
 
     cache_key = f"hr_employee_{hash_md5}_photo_{include_photo}"
     if cache_key in _cache:
-        cached_data, cached_time = _cache[cache_key]
-        if pendulum.now() - cached_time < CACHE_TTL:
-            return cached_data
-        else:
-            del _cache[cache_key]
+        return _cache[cache_key]
 
     if not settings.HR_API_URL:
         logger.error("HR_API_URL не настроен")
@@ -77,7 +76,7 @@ async def get_employee_by_hash(
         response.raise_for_status()
         employee_data = response.json()
 
-        _cache[cache_key] = (employee_data, pendulum.now())
+        _cache[cache_key] = employee_data
         return employee_data
 
     except httpx.RequestError as e:
@@ -126,7 +125,7 @@ async def get_employees_by_hashes(
                     if hash_md5:
                         result[hash_md5] = employee
                         cache_key = f"hr_employee_{hash_md5}_photo_{include_photo}"
-                        _cache[cache_key] = (employee, pendulum.now())
+                        _cache[cache_key] = employee
 
         return result
 
