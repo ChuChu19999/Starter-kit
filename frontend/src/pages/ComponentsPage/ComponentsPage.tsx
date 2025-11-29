@@ -16,7 +16,6 @@ import {
   AddLaboratoryCard,
   AddDepartmentCard,
 } from '../../shared/ui/Card';
-import ColorPicker from '../../shared/ui/ColorPicker/ColorPicker';
 import { FormWrapper, InputText, RadioGroup, Select } from '../../shared/ui/FormItems';
 import Layout from '../../shared/ui/Layout/Layout';
 import { Modal } from '../../shared/ui/Modal';
@@ -53,11 +52,6 @@ const ComponentsPage = () => {
             <div className="component-card">
               <h4>Bubble</h4>
               <Bubble text="Пример Bubble" />
-            </div>
-
-            <div className="component-card">
-              <h4>ColorPicker</h4>
-              <ColorPicker />
             </div>
 
             <div className="component-card">
