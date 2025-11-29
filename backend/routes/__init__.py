@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Request
-from routes import user
+from routes import employees, user
 
 api_router = APIRouter(prefix="/api")
 
 api_router.include_router(user.router, tags=("user",))
+api_router.include_router(employees.router, prefix="/employees", tags=("employees",))
 
 
 @api_router.get("/")
