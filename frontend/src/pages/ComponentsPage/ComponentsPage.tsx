@@ -6,7 +6,8 @@ import { UserPicker, type Employee } from '../../entities/UserPicker';
 import { ErrorCard, LoadingCard } from '../../features/Cards';
 import ElementsList from '../../features/FormItems/ui/ElementsList/ElementsList';
 import FormItem from '../../features/FormItems/ui/FormItem/FormItem';
-import errorAnimation from '../../shared/assets/animations/404_1.json';
+import errorAnimation404 from '../../shared/assets/animations/404_1.json';
+import errorAnimation503 from '../../shared/assets/animations/503_1.json';
 import Bubble from '../../shared/ui/Bubble/Bubble';
 import Button from '../../shared/ui/Button/Button';
 import {
@@ -22,6 +23,7 @@ import { Modal } from '../../shared/ui/Modal';
 import Tooltip from '../../shared/ui/Tooltip/Tooltip';
 import Tour from '../../shared/ui/Tour/Tour';
 import { NavigationBar } from '../../widgets/NavigationBar';
+import { UserInfo } from '../../widgets/UserInfo';
 import './ComponentsPage.css';
 
 const ComponentsPage = () => {
@@ -39,13 +41,6 @@ const ComponentsPage = () => {
     <Layout title="Путеводитель по компонентам">
       <LoadingCard loading={loadingCardLoading} />
       <div className="components-page-content">
-        <div className="components-intro">
-          <h2>Добро пожаловать в путеводитель по компонентам!</h2>
-          <p>
-            На этой странице представлены все компоненты из директорий shared, features и widgets.
-          </p>
-        </div>
-
         {/* Shared UI Components */}
         <section className="components-section">
           <h3 className="section-title">Shared UI Components</h3>
@@ -74,10 +69,6 @@ const ComponentsPage = () => {
 
             <div className="component-card" ref={tourCardRef}>
               <h4>Tour</h4>
-              <p style={{ marginBottom: '12px', fontSize: '14px', color: '#666' }}>
-                Компонент для создания интерактивных туров по интерфейсу. Помогает пользователям
-                ознакомиться с функционалом приложения через пошаговые подсказки.
-              </p>
               <div ref={tourButtonRef}>
                 <Button title="Запустить тур" onClick={() => setTourOpen(true)} />
               </div>
@@ -278,11 +269,20 @@ const ComponentsPage = () => {
           <h3 className="section-title">Features Components</h3>
           <div className="components-grid">
             <div className="component-card" style={{ gridColumn: '1 / -1' }}>
-              <h4>ErrorCard</h4>
+              <h4>ErrorCard (404)</h4>
               <ErrorCard
                 title="Ошибка"
-                text="Пример отображения ошибки"
-                animation={errorAnimation}
+                text="Пример отображения ошибки 404"
+                animation={errorAnimation404}
+              />
+            </div>
+
+            <div className="component-card" style={{ gridColumn: '1 / -1' }}>
+              <h4>ErrorCard (503)</h4>
+              <ErrorCard
+                title="Ошибка"
+                text="Пример отображения ошибки 503"
+                animation={errorAnimation503}
               />
             </div>
 
@@ -346,6 +346,25 @@ const ComponentsPage = () => {
                 showBack={true}
                 onHomeClick={() => navigate('/')}
                 onBack={() => navigate('/')}
+              />
+            </div>
+
+            <div className="component-card" style={{ gridColumn: 'span 2' }}>
+              <h4>UserInfo</h4>
+              <UserInfo
+                userCabinet={{
+                  id: 1,
+                  hsnils: '12345678901',
+                  employee_full_name: 'Иванов Иван Иванович',
+                  employee_department: 'Отдел разработки',
+                  employee_division: 'Инженер-программист',
+                }}
+                employeeData={{
+                  fullName: 'Иванов Иван Иванович',
+                  department: 'Отдел разработки',
+                  division: 'СИУС',
+                  jobTitle: 'Инженер-программист',
+                }}
               />
             </div>
           </div>
