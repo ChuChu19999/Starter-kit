@@ -6,7 +6,7 @@ import { UserPicker, type Employee } from '../../entities/UserPicker';
 import { ErrorCard, LoadingCard } from '../../features/Cards';
 import ElementsList from '../../features/FormItems/ui/ElementsList/ElementsList';
 import FormItem from '../../features/FormItems/ui/FormItem/FormItem';
-import loadingAnimation from '../../shared/assets/animations/loading_main.json';
+import errorAnimation from '../../shared/assets/animations/404_1.json';
 import Bubble from '../../shared/ui/Bubble/Bubble';
 import Button from '../../shared/ui/Button/Button';
 import {
@@ -282,7 +282,7 @@ const ComponentsPage = () => {
               <ErrorCard
                 title="Ошибка"
                 text="Пример отображения ошибки"
-                animation={loadingAnimation}
+                animation={errorAnimation}
               />
             </div>
 

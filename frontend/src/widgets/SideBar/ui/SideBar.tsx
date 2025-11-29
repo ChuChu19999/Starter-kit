@@ -197,14 +197,7 @@ const SideBar = ({ username, isAdmin, onMinimizeChange }: SideBarProps) => {
       <div className="footer">
         <BiChevronsRight className="arrowButton" size={25} onClick={toggleMenu} />
 
-        <div
-          className="user"
-          style={{ cursor: 'pointer' }}
-          onClick={() => {
-            shouldResetRef.current = true;
-            navigate({ pathname: '/', search: '' }, { replace: true });
-          }}
-        >
+        <div className="user">
           <BiUser className="user-icon" size={25} />
 
           {!minimize && username && <p className="user-name">{username}</p>}

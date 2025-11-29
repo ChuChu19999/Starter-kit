@@ -10,21 +10,6 @@ const HelpPage = () => {
           <ul className="list">
             <li className="list-item">Приложение инициализировано</li>
           </ul>
-          <ul className="list">
-            <li className="list-item">Добавлена базовая структура frontend</li>
-          </ul>
-          <ul className="list">
-            <li className="list-item">Добавлены компоненты shared/ui</li>
-          </ul>
-          <ul className="list">
-            <li className="list-item">Добавлена главная страница</li>
-          </ul>
-          <ul className="list">
-            <li className="list-item">Добавлена страница компонентов</li>
-          </ul>
-          <ul className="list">
-            <li className="list-item">Добавлена страница помощи</li>
-          </ul>
         </div>
         <div>
           <p className="title">Если у Вас возникли вопросы по работе в системе:</p>

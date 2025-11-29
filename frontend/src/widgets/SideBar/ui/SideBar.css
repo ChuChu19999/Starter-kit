@@ -230,18 +230,9 @@
   flex-direction: row;
   padding: 20px;
   border-top: 1px solid #bdbfc1;
-  cursor: pointer;
   transition: all 0.4s ease;
   height: 75px;
   box-sizing: border-box;
-}
-
-.sidebar-wrapper .user:hover {
-  background-color: rgba(4, 59, 107, 0.1);
-}
-
-.sidebar-wrapper .user:active {
-  background-color: rgba(4, 59, 107, 0.2);
 }
 
 .sidebar-wrapper .user-icon {
