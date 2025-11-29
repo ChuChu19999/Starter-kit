@@ -2,29 +2,6 @@ import { create } from 'zustand';
 import { logger } from '../../lib/zustand/middleware';
 import type { QueryState } from '../../lib/zustand/types';
 
-/**
- * Базовый Query Store для шаблона
- * Используется для управления параметрами запросов (пагинация, фильтры, сортировка)
- *
- * Для конкретного проекта можно расширить этот интерфейс, добавив специфичные query состояния
- * Пример расширения:
- *
- * interface MyEntityQueryState extends QueryState {
- *   filters?: {
- *     name?: string;
- *     status?: string[];
- *   };
- * }
- *
- * interface QueryStore {
- *   myEntityQuery: MyEntityQueryState;
- *   setMyEntityPage: (page: number) => void;
- *   setMyEntityPageSize: (pageSize: number) => void;
- *   setMyEntityFilters: (filters: MyEntityQueryState['filters']) => void;
- *   resetMyEntityQuery: () => void;
- *   resetAllQueries: () => void;
- * }
- */
 interface QueryStore {
   // Метод для сброса всех query состояний
   resetAllQueries: () => void;

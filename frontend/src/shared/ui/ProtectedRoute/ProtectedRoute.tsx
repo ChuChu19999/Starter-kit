@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ isAdmin, path, children }: ProtectedRouteProps) => {
   // Разрешенные пути для не-админов
-  const allowedPathsForNonAdmin = ['/', '/help', '/personal-cabinet'];
+  const allowedPathsForNonAdmin = ['/', '/help'];
 
   // Если пользователь не админ и пытается зайти на недоступную страницу - редиректим на главную
   if (!isAdmin && !allowedPathsForNonAdmin.includes(path)) {
