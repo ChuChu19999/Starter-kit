@@ -1,0 +1,39 @@
+networks:
+  starter_kit_network:
+    name: starter_kit_network
+
+volumes:
+  starter_kit_static:
+  starter_kit_media:
+
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: ./docker/backend/Dockerfile
+    container_name: starter_kit_fastapi
+    image: harbor.gd-urengoy.gazprom.ru/starter_kit/starter_kit_fastapi:latest
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
+    restart: always
+    networks:
+      - starter_kit_network
+    volumes:
+      - starter_kit_static:/home/app/web/static
+      - starter_kit_media:/home/app/web/media
+
+  app:
+    build:
+      context: ..
+      dockerfile: ./docker/nginx/Dockerfile
+    container_name: starter_kit_app
+    image: harbor.gd-urengoy.gazprom.ru/starter_kit/starter_kit_app:latest
+    restart: always
+    networks:
+      - starter_kit_network
+    volumes:
+      - starter_kit_static:/backend_static
+      - starter_kit_media:/media
+    ports:
+      - "0.0.0.0:8000:80"  # Единый порт для frontend и backend
+    depends_on:
+      - backend
