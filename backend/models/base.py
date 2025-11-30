@@ -1,5 +1,5 @@
 import pendulum
-from sqlalchemy import Column, DateTime, String, event
+from sqlalchemy import Column, DateTime, Integer, String, event
 from sqlalchemy.sql import func
 from core.config import get_database_schema
 from core.database import Base
@@ -9,6 +9,8 @@ from utils.current_user import get_current_user
 class BaseModel(Base):
     __abstract__ = True
     __table_args__ = {"schema": get_database_schema()}
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
 
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False, index=True
