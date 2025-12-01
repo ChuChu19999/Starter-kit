@@ -10,7 +10,6 @@ from core.exceptions import (
     validation_exception_handler,
 )
 from core.http_clients import close_all_clients
-from core.logger import logger
 from core.middleware import LogHeadersMiddleware
 from core.responses import ORJSONResponse
 from core.swagger import setup_swagger_ui
@@ -50,19 +49,6 @@ def custom_openapi():
         routes=app.routes,
     )
     openapi_schema["openapi"] = "3.0.2"
-
-    if "components" not in openapi_schema:
-        openapi_schema["components"] = {}
-
-    openapi_schema["components"]["securitySchemes"] = {
-        "X-API-KEY": {
-            "type": "apiKey",
-            "in": "header",
-            "name": "X-API-KEY",
-            "description": ("JWT токен Keycloak для авторизации. "),
-        }
-    }
-
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
