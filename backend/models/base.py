@@ -10,8 +10,6 @@ class BaseModel(Base):
     __abstract__ = True
     __table_args__ = {"schema": get_database_schema()}
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False, index=True
     )
