@@ -1,6 +1,5 @@
 from typing import Any, Optional
 import httpx
-import pendulum
 from cachetools import TTLCache
 from core.config import settings
 from core.http_clients import get_hr_client
@@ -55,6 +54,7 @@ async def get_employee_by_hash(
 ) -> Optional[dict[str, Any]]:
     """
     Получение информации о сотруднике по hashMd5 через HR API.
+    Возвращает None, если сотрудник не найден (404) или произошла ошибка.
     """
     if not hash_md5:
         return None
@@ -73,12 +73,25 @@ async def get_employee_by_hash(
 
         client = await get_hr_client()
         response = await client.get(url, headers=headers)
+
+        if response.status_code == 404:
+            logger.debug(f"Сотрудник с hash_md5={hash_md5} не найден в HR API (404)")
+            _cache[cache_key] = None
+            return None
+
         response.raise_for_status()
         employee_data = response.json()
 
         _cache[cache_key] = employee_data
         return employee_data
 
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == 404:
+            logger.debug(f"Сотрудник с hash_md5={hash_md5} не найден в HR API (404)")
+            _cache[cache_key] = None
+            return None
+        logger.error(f"Ошибка HTTP при обращении к HR API: {str(e)}")
+        raise
     except httpx.RequestError as e:
         logger.error(f"Ошибка при обращении к HR API: {str(e)}")
         raise
@@ -92,6 +105,7 @@ async def get_employees_by_hashes(
 ) -> dict[str, dict[str, Any]]:
     """
     Получение информации о сотрудниках по массиву hashMd5 через HR API (батч-запрос).
+    Возвращает словарь только с найденными сотрудниками. Отсутствующие в HR API игнорируются.
     """
     if not hashes_md5 or len(hashes_md5) == 0:
         return {}
@@ -114,6 +128,11 @@ async def get_employees_by_hashes(
 
         client = await get_hr_client()
         response = await client.post(url, headers=headers, json=payload)
+
+        if response.status_code == 404:
+            logger.debug(f"Сотрудники с указанными hash_md5 не найдены в HR API (404)")
+            return {}
+
         response.raise_for_status()
         employees_data = response.json()
 
@@ -129,6 +148,12 @@ async def get_employees_by_hashes(
 
         return result
 
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == 404:
+            logger.debug(f"Сотрудники с указанными hash_md5 не найдены в HR API (404)")
+            return {}
+        logger.error(f"Ошибка HTTP при обращении к HR API: {str(e)}")
+        raise
     except httpx.RequestError as e:
         logger.error(f"Ошибка при обращении к HR API: {str(e)}")
         raise
