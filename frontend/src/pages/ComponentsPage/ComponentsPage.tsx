@@ -336,9 +336,7 @@ const ComponentsPage = () => {
                   { label: 'Главная', onClick: () => navigate('/') },
                   { label: 'Компоненты' },
                 ]}
-                showHome={true}
                 showBack={true}
-                onHomeClick={() => navigate('/')}
                 onBack={() => navigate('/')}
               />
             </div>
