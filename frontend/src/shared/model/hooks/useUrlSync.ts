@@ -16,7 +16,6 @@ export interface UseUrlSyncOptions {
 
 /**
  * Хук для синхронизации store с URL параметрами
- * Полезен для сохранения состояния фильтров, пагинации и сортировки в URL
  */
 export function useUrlSync<TFilters extends Record<string, unknown> = Record<string, unknown>>(
   options: UseUrlSyncOptions,

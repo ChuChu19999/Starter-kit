@@ -1,7 +1,8 @@
-import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Form } from 'antd';
 import { ConfirmationModal } from '../../entities/ConfirmationModal';
+import { ResetFiltersButton } from '../../entities/ResetFiltersButton';
 import { UserPicker, type Employee } from '../../entities/UserPicker';
 import { ErrorCard, LoadingCard } from '../../features/Cards';
 import ElementsList from '../../features/FormItems/ui/ElementsList/ElementsList';
@@ -11,10 +12,10 @@ import errorAnimation503 from '../../shared/assets/animations/503_1.json';
 import Bubble from '../../shared/ui/Bubble/Bubble';
 import Button from '../../shared/ui/Button/Button';
 import {
-  LaboratoryCard,
-  DepartmentCard,
-  AddLaboratoryCard,
   AddDepartmentCard,
+  AddLaboratoryCard,
+  DepartmentCard,
+  LaboratoryCard,
 } from '../../shared/ui/Card';
 import { FormWrapper, InputText, RadioGroup, Select } from '../../shared/ui/FormItems';
 import Layout from '../../shared/ui/Layout/Layout';
@@ -33,8 +34,13 @@ const ComponentsPage = () => {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const tourButtonRef = useRef<HTMLDivElement>(null);
   const tourCardRef = useRef<HTMLDivElement>(null);
+
+  const handleResetFilters = () => {
+    console.log('Фильтры сброшены');
+  };
 
   return (
     <Layout title="Путеводитель по компонентам">
@@ -254,6 +260,31 @@ const ComponentsPage = () => {
                   placeholder="Введите ФИО сотрудника"
                 />
               </div>
+            </div>
+            <div className="component-card">
+              <h4>ResetFiltersButton</h4>
+              <p style={{ marginBottom: '12px', fontSize: '14px', color: '#666' }}>
+                Кнопка для сброса фильтров и очистки URL параметров. Добавьте параметры в URL
+                (например: ?filter=test&page=2), затем нажмите кнопку для их сброса.
+              </p>
+              <div style={{ marginBottom: '12px' }}>
+                <p style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
+                  Текущие URL параметры:
+                </p>
+                <div
+                  style={{
+                    padding: '8px',
+                    backgroundColor: '#f5f5f5',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    fontFamily: 'monospace',
+                    wordBreak: 'break-all',
+                  }}
+                >
+                  {searchParams.toString() || '(нет параметров)'}
+                </div>
+              </div>
+              <ResetFiltersButton onReset={handleResetFilters} />
             </div>
           </div>
         </section>
