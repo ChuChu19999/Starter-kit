@@ -5,7 +5,7 @@
   width: 100%;
   padding: 12px 20px;
   background: linear-gradient(135deg, #f8faff 0%, #f0f5ff 100%);
-  border-radius: 0 0 12px 12px;
+  border-radius: 0;
   margin-top: 0;
   margin-bottom: 0;
   margin-left: 0;
@@ -52,7 +52,7 @@
   width: 40px;
   height: 40px;
   border: none;
-  border-radius: 10px;
+  border-radius: 0;
   background: rgba(44, 82, 130, 0.1);
   color: #2c5282;
   cursor: pointer;
@@ -100,7 +100,7 @@
   color: #718096;
   transition: all 0.2s ease;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: 0;
 }
 
 .breadcrumb-item:hover {
