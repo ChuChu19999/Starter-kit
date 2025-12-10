@@ -16,8 +16,8 @@ import {
   AddLaboratoryCard,
   DepartmentCard,
   LaboratoryCard,
-} from '../../shared/ui/Card';
-import { FormWrapper, InputText, RadioGroup, Select } from '../../shared/ui/FormItems';
+} from '../../shared/ui/Cards';
+import { FormWrapper, Input, InputText, RadioGroup, Select } from '../../shared/ui/FormItems';
 import Layout from '../../shared/ui/Layout/Layout';
 import { Modal } from '../../shared/ui/Modal';
 import Tooltip from '../../shared/ui/Tooltip/Tooltip';
@@ -147,6 +147,11 @@ const ComponentsPage = () => {
               <FormWrapper>
                 <InputText placeholder="Введите текст" rows={2} />
               </FormWrapper>
+            </div>
+
+            <div className="component-card">
+              <h4>Input</h4>
+              <Input placeholder="Введите текст" />
             </div>
 
             <div className="component-card">
