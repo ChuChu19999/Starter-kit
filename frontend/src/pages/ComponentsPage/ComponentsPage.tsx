@@ -190,31 +190,17 @@ const ComponentsPage = () => {
               <h4>Modal</h4>
               <Button title="Открыть модальное окно" onClick={() => setModalOpen(true)} />
               {modalOpen && (
-                <>
-                  <div
-                    style={{
-                      position: 'fixed',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                      zIndex: 999,
-                      margin: 0,
-                    }}
-                  />
-                  <Modal
-                    header="Пример модального окна"
-                    onClose={() => setModalOpen(false)}
-                    onSave={() => {
-                      console.log('Saved');
-                      setModalOpen(false);
-                    }}
-                    saveButtonText="Сохранить"
-                  >
-                    <p>Это пример модального окна. Здесь может быть любой контент.</p>
-                  </Modal>
-                </>
+                <Modal
+                  header="Пример модального окна"
+                  onClose={() => setModalOpen(false)}
+                  onSave={() => {
+                    console.log('Saved');
+                    setModalOpen(false);
+                  }}
+                  saveButtonText="Сохранить"
+                >
+                  <p>Это пример модального окна. Здесь может быть любой контент.</p>
+                </Modal>
               )}
             </div>
           </div>

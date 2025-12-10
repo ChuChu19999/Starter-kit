@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { BiX } from 'react-icons/bi';
 import Button from '../../Button/Button';
 import './Modal.css';
@@ -22,6 +23,7 @@ interface ModalProps {
   generateButtonText?: string;
   generateLoading?: boolean;
   extraButtons?: React.ReactNode;
+  modalWidth?: '450' | '550' | '1000';
 }
 
 const Modal = ({
@@ -43,6 +45,7 @@ const Modal = ({
   generateButtonText = 'Сформировать протокол',
   generateLoading = false,
   extraButtons,
+  modalWidth,
 }: ModalProps) => {
   const [isLoading, setLoading] = useState<{ loading: boolean; type: string }>({
     loading: false,
@@ -109,69 +112,78 @@ const Modal = ({
     e.stopPropagation();
   };
 
-  return (
-    <div
-      className={`modal-wrapper ${isClosing ? 'modal-closing' : 'modal-opening'}`}
-      style={style}
-      onClick={handleModalClick}
-    >
-      <div className="modal-header">
-        <p>{header}</p>
-        <BiX size={25} className="modal-close" onClick={() => handleClick('close')} />
-      </div>
+  const modalContent = (
+    <>
+      <div className={`modal-overlay ${isClosing ? 'fade-out' : 'fade-in'}`} />
+      <div
+        className={`modal-wrapper ${isClosing ? 'modal-closing' : 'modal-opening'} ${modalWidth ? `modal-width-${modalWidth}` : ''}`}
+        style={style}
+        onClick={handleModalClick}
+      >
+        <div className="modal-header">
+          <p>{header}</p>
+          <BiX size={25} className="modal-close" onClick={() => handleClick('close')} />
+        </div>
 
-      <div className="body">
-        <div className="body-content">{children}</div>
+        <div className="body">
+          <div className="body-content">{children}</div>
 
-        <div className="body-buttons">
-          {extraButtons && <div className="body-buttons-extra">{extraButtons}</div>}
-          <div className="body-buttons-main">
-            {onCancel && (
-              <Button title={cancelText} onClick={() => handleClick('cancel')}>
-                {cancelText}
-              </Button>
-            )}
-            {onDelete && (
-              <Button danger title={deleteTitle || 'Удалить'} onClick={() => handleClick('delete')}>
-                {deleteTitle || 'Удалить'}
-              </Button>
-            )}
-            {showEditButton && editable && onEdit && (
-              <Button
-                loading={isLoading.loading && isLoading.type === 'edit'}
-                title="Изменить"
-                type="primary"
-                onClick={() => handleClick('edit')}
-              >
-                Изменить
-              </Button>
-            )}
-            {onSave && (
-              <Button
-                loading={isLoading.loading && isLoading.type === 'save'}
-                title={saveButtonText}
-                type="primary"
-                buttonColor={saveButtonColor}
-                onClick={() => handleClick('save')}
-              >
-                {saveButtonText}
-              </Button>
-            )}
-            {onGenerate && (
-              <Button
-                loading={generateLoading}
-                title={generateButtonText}
-                type="primary"
-                onClick={onGenerate}
-              >
-                {generateButtonText}
-              </Button>
-            )}
+          <div className="body-buttons">
+            {extraButtons && <div className="body-buttons-extra">{extraButtons}</div>}
+            <div className="body-buttons-main">
+              {onCancel && (
+                <Button title={cancelText} onClick={() => handleClick('cancel')}>
+                  {cancelText}
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  danger
+                  title={deleteTitle || 'Удалить'}
+                  onClick={() => handleClick('delete')}
+                >
+                  {deleteTitle || 'Удалить'}
+                </Button>
+              )}
+              {showEditButton && editable && onEdit && (
+                <Button
+                  loading={isLoading.loading && isLoading.type === 'edit'}
+                  title="Изменить"
+                  type="primary"
+                  onClick={() => handleClick('edit')}
+                >
+                  Изменить
+                </Button>
+              )}
+              {onSave && (
+                <Button
+                  loading={isLoading.loading && isLoading.type === 'save'}
+                  title={saveButtonText}
+                  type="primary"
+                  buttonColor={saveButtonColor}
+                  onClick={() => handleClick('save')}
+                >
+                  {saveButtonText}
+                </Button>
+              )}
+              {onGenerate && (
+                <Button
+                  loading={generateLoading}
+                  title={generateButtonText}
+                  type="primary"
+                  onClick={onGenerate}
+                >
+                  {generateButtonText}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 export default Modal;
