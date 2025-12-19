@@ -61,8 +61,6 @@ async def search_employees(
 ):
     """
     Поиск сотрудников по части ФИО (не менее 3 символов).
-
-    Выполняет запрос к HR API для поиска сотрудников.
     """
     try:
         employees = await search_employees_by_fio(

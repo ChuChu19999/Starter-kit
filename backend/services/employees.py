@@ -54,7 +54,6 @@ async def get_employee_by_hash(
 ) -> Optional[dict[str, Any]]:
     """
     Получение информации о сотруднике по hashMd5 через HR API.
-    Возвращает None, если сотрудник не найден (404) или произошла ошибка.
     """
     if not hash_md5:
         return None
@@ -105,7 +104,6 @@ async def get_employees_by_hashes(
 ) -> dict[str, dict[str, Any]]:
     """
     Получение информации о сотрудниках по массиву hashMd5 через HR API (батч-запрос).
-    Возвращает словарь только с найденными сотрудниками. Отсутствующие в HR API игнорируются.
     """
     if not hashes_md5 or len(hashes_md5) == 0:
         return {}
