@@ -1,4 +1,5 @@
 import math
+from typing import Optional
 from sqlalchemy import Select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,10 +12,14 @@ def calculate_pagination(page: int, page_size: int) -> tuple[int, int]:
     return offset, page_size
 
 
-def calculate_total_pages(total: int, page_size: int) -> int:
+def calculate_total_pages(total: int, page_size: Optional[int]) -> int:
     """
     Вычисление общего количества страниц.
+
+    Если page_size не указан, возвращает 1 если есть записи, иначе 0.
     """
+    if page_size is None or page_size == 0:
+        return 1 if total > 0 else 0
     return math.ceil(total / page_size) if total > 0 else 0
 
 
@@ -26,9 +31,16 @@ async def get_total_count(db: AsyncSession, count_query: Select[tuple[int]]) -> 
     return result.scalar() or 0
 
 
-def apply_pagination(query: Select, page: int, page_size: int) -> Select:
+def apply_pagination(
+    query: Select, page: Optional[int], page_size: Optional[int]
+) -> Select:
     """
-    Применение пагинации к SQLAlchemy запросу.
+    Применение опциональной пагинации к SQLAlchemy запросу.
+
+    Если page и page_size указаны, применяет пагинацию.
+    Иначе возвращает запрос без пагинации.
     """
-    offset, limit = calculate_pagination(page, page_size)
-    return query.offset(offset).limit(limit)
+    if page is not None and page_size is not None:
+        offset, limit = calculate_pagination(page, page_size)
+        return query.offset(offset).limit(limit)
+    return query

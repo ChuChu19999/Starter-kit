@@ -1,3 +1,28 @@
+/* Скрытие стрелочек у числовых инпутов */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.ant-input-number input[type='number']::-webkit-inner-spin-button,
+.ant-input-number input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+.ant-input-number input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 /* Базовые стили для Input при фокусе */
 .ant-input:hover {
   border-color: #1677ff !important;
@@ -121,6 +146,7 @@
 
 /* Скрываем календарную иконку когда показывается крестик */
 .ant-picker:not(.ant-picker-disabled) .ant-picker-clear ~ .ant-picker-suffix:not(.ant-picker-clear),
-.ant-picker:not(.ant-picker-disabled):has(.ant-picker-clear) .ant-picker-suffix:not(.ant-picker-clear) {
+.ant-picker:not(.ant-picker-disabled):has(.ant-picker-clear)
+  .ant-picker-suffix:not(.ant-picker-clear) {
   display: none !important;
 }

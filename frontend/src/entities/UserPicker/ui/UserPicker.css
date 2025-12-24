@@ -83,8 +83,11 @@
 }
 
 /* Скрываем стандартные иконки Input когда показывается крестик */
-.user-picker-container:has(.user-picker-clear-icon) .ant-input-suffix:not(:has(.user-picker-clear-icon)),
-.user-picker-container .ant-input-affix-wrapper:has(.user-picker-clear-icon) .ant-input-suffix:not(:has(.user-picker-clear-icon)) {
+.user-picker-container:has(.user-picker-clear-icon)
+  .ant-input-suffix:not(:has(.user-picker-clear-icon)),
+.user-picker-container
+  .ant-input-affix-wrapper:has(.user-picker-clear-icon)
+  .ant-input-suffix:not(:has(.user-picker-clear-icon)) {
   display: none !important;
 }
 
