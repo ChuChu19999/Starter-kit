@@ -1,14 +1,8 @@
 from typing import Any, Optional
 import httpx
-from cachetools import TTLCache
 from core.config import settings
 from core.http_clients import get_hr_client
 from core.logger import logger
-
-CACHE_MAX_SIZE = 1000
-CACHE_TTL_SECONDS = 600
-
-_cache: TTLCache[str, Any] = TTLCache(maxsize=CACHE_MAX_SIZE, ttl=CACHE_TTL_SECONDS)
 
 
 async def search_employees_by_fio(
@@ -58,10 +52,6 @@ async def get_employee_by_hash(
     if not hash_md5:
         return None
 
-    cache_key = f"hr_employee_{hash_md5}_photo_{include_photo}"
-    if cache_key in _cache:
-        return _cache[cache_key]
-
     if not settings.HR_API_URL:
         logger.error("HR_API_URL не настроен")
         raise ValueError("HR_API_URL не настроен")
@@ -75,19 +65,16 @@ async def get_employee_by_hash(
 
         if response.status_code == 404:
             logger.debug(f"Сотрудник с hash_md5={hash_md5} не найден в HR API (404)")
-            _cache[cache_key] = None
             return None
 
         response.raise_for_status()
         employee_data = response.json()
 
-        _cache[cache_key] = employee_data
         return employee_data
 
     except httpx.HTTPStatusError as e:
         if e.response.status_code == 404:
             logger.debug(f"Сотрудник с hash_md5={hash_md5} не найден в HR API (404)")
-            _cache[cache_key] = None
             return None
         logger.error(f"Ошибка HTTP при обращении к HR API: {str(e)}")
         raise
@@ -141,8 +128,6 @@ async def get_employees_by_hashes(
                     hash_md5 = employee.get("hashMd5")
                     if hash_md5:
                         result[hash_md5] = employee
-                        cache_key = f"hr_employee_{hash_md5}_photo_{include_photo}"
-                        _cache[cache_key] = employee
 
         return result
 
