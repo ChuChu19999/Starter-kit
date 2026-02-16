@@ -127,7 +127,19 @@ async def get_employees_by_hashes(
                 if isinstance(employee, dict) and "hashMd5" in employee:
                     hash_md5 = employee.get("hashMd5")
                     if hash_md5:
-                        result[hash_md5] = employee
+                        # Если для этого hash уже есть запись, выбираем ту, где workingNowStatus == "Работает"
+                        if hash_md5 in result:
+                            current_status = result[hash_md5].get("workingNowStatus")
+                            new_status = employee.get("workingNowStatus")
+
+                            # Заменяем только если новая запись имеет статус "Работает", а текущая - нет
+                            if (
+                                new_status == "Работает"
+                                and current_status != "Работает"
+                            ):
+                                result[hash_md5] = employee
+                        else:
+                            result[hash_md5] = employee
 
         return result
 
