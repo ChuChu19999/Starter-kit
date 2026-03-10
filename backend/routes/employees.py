@@ -51,7 +51,7 @@ async def search_employees(
         min_length=3,
         alias="searchFio",
         description="Часть ФИО для поиска (минимум 3 символа)",
-        example="Иванов",
+        examples=["Иванов"],
     ),
     include_photo: bool = Query(
         True,

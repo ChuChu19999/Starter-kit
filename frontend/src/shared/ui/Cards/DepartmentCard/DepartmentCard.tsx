@@ -39,8 +39,21 @@ const DepartmentCard = ({
     onDelete?.(department, e);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick?.(department);
+    }
+  };
+
   return (
-    <div className="department-card" onClick={() => onClick?.(department)}>
+    <div
+      className="department-card"
+      role="button"
+      tabIndex={0}
+      onClick={() => onClick?.(department)}
+      onKeyDown={handleKeyDown}
+    >
       <div className="department-card-content">
         <div className="department-card-header">
           <DeptIcon className="department-icon" />
@@ -53,7 +66,12 @@ const DepartmentCard = ({
         )}
       </div>
       {showActions && (
-        <div className="department-card-actions" onClick={e => e.stopPropagation()}>
+        <div
+          className="department-card-actions"
+          role="group"
+          onClick={e => e.stopPropagation()}
+          onKeyDown={e => e.stopPropagation()}
+        >
           <div className="button-wrapper">
             <Button
               title="Редактировать"

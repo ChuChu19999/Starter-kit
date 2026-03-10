@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useReducer, useRef } from 'react';
 import { Spin } from 'antd';
 import './LoadingCard.css';
 
@@ -7,47 +7,57 @@ interface LoadingCardProps {
   minDuration?: number; // Минимальная длительность показа в миллисекундах (по умолчанию 500)
 }
 
+type LoadingState = {
+  loadingEndedAt: number | null;
+  position: { top: number; left: number; width: number; height: number };
+};
+
+type LoadingAction =
+  | { type: 'LOADING_START' }
+  | { type: 'LOADING_END_AT'; payload: number }
+  | { type: 'LOADING_CLEAR' }
+  | { type: 'SET_POSITION'; payload: LoadingState['position'] };
+
+const initialState: LoadingState = {
+  loadingEndedAt: null,
+  position: { top: 0, left: 0, width: 0, height: 0 },
+};
+
+function loadingReducer(state: LoadingState, action: LoadingAction): LoadingState {
+  switch (action.type) {
+    case 'LOADING_START':
+      return { ...state, loadingEndedAt: null };
+    case 'LOADING_END_AT':
+      return { ...state, loadingEndedAt: action.payload };
+    case 'LOADING_CLEAR':
+      return { ...state, loadingEndedAt: null };
+    case 'SET_POSITION':
+      return { ...state, position: action.payload };
+    default:
+      return state;
+  }
+}
+
 const LoadingCard = ({ loading = true, minDuration = 500 }: LoadingCardProps) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const prevLoadingRef = useRef<boolean | undefined>(undefined);
   const startTimeRef = useRef<number | null>(null);
-  const [position, setPosition] = useState({ top: 0, left: 0, width: 0, height: 0 });
-  const [internalLoading, setInternalLoading] = useState(loading);
+  const [state, dispatch] = useReducer(loadingReducer, initialState);
 
-  // Управление показом загрузчика с минимальной длительностью
   useEffect(() => {
-    const wasFalse = prevLoadingRef.current === false;
-
     if (loading) {
-      // Запоминаем время начала загрузки (только при переходе из false в true)
-      if (wasFalse || startTimeRef.current === null) {
-        startTimeRef.current = Date.now();
-      }
-      setInternalLoading(true);
-    } else {
-      // Когда loading становится false, проверяем минимальную длительность
-      if (startTimeRef.current !== null) {
-        const elapsedTime = Date.now() - startTimeRef.current;
-        if (elapsedTime < minDuration) {
-          // Если прошло меньше минимального времени, ждем оставшееся время
-          const remainingTime = minDuration - elapsedTime;
-          const timer = setTimeout(() => {
-            setInternalLoading(false);
-            startTimeRef.current = null;
-          }, remainingTime);
-          prevLoadingRef.current = loading;
-          return () => clearTimeout(timer);
-        } else {
-          // Если прошло достаточно времени, сразу скрываем
-          setInternalLoading(false);
-          startTimeRef.current = null;
-        }
-      } else {
-        setInternalLoading(false);
-      }
+      startTimeRef.current = Date.now();
+      dispatch({ type: 'LOADING_START' });
+      return;
     }
-    prevLoadingRef.current = loading;
+    if (startTimeRef.current === null) return;
+    const elapsed = Date.now() - startTimeRef.current;
+    const remaining = Math.max(0, minDuration - elapsed);
+    dispatch({ type: 'LOADING_END_AT', payload: Date.now() });
+    const timer = setTimeout(() => dispatch({ type: 'LOADING_CLEAR' }), remaining);
+    return () => clearTimeout(timer);
   }, [loading, minDuration]);
+
+  const internalLoading = loading || state.loadingEndedAt !== null;
 
   useEffect(() => {
     const contentElement = wrapperRef.current?.closest('.layout-wrapper .content') as HTMLElement;
@@ -55,18 +65,15 @@ const LoadingCard = ({ loading = true, minDuration = 500 }: LoadingCardProps) =>
 
     const updatePosition = () => {
       const rect = contentElement.getBoundingClientRect();
-      setPosition({
-        top: rect.top,
-        left: rect.left,
-        width: rect.width,
-        height: rect.height,
+      dispatch({
+        type: 'SET_POSITION',
+        payload: { top: rect.top, left: rect.left, width: rect.width, height: rect.height },
       });
     };
 
     if (internalLoading) {
       updatePosition();
 
-      // Блокируем скролл и скрываем скроллбар
       contentElement.classList.add('loading-active');
       const scrollTop = contentElement.scrollTop;
 
@@ -82,11 +89,12 @@ const LoadingCard = ({ loading = true, minDuration = 500 }: LoadingCardProps) =>
         updatePosition();
       };
 
+      // passive: false обязателен — preventDefault блокирует скролл во время лоадера
       contentElement.addEventListener('wheel', preventScroll, { passive: false });
       contentElement.addEventListener('touchmove', preventScroll, { passive: false });
-      contentElement.addEventListener('scroll', resetScroll);
+      contentElement.addEventListener('scroll', resetScroll, { passive: true });
       window.addEventListener('resize', handleResize);
-      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('scroll', updatePosition, { passive: true, capture: true });
 
       return () => {
         contentElement.removeEventListener('wheel', preventScroll);
@@ -108,10 +116,10 @@ const LoadingCard = ({ loading = true, minDuration = 500 }: LoadingCardProps) =>
       ref={wrapperRef}
       className="loading-card-wrapper"
       style={{
-        top: `${position.top}px`,
-        left: `${position.left}px`,
-        width: `${position.width}px`,
-        height: `${position.height}px`,
+        top: `${state.position.top}px`,
+        left: `${state.position.left}px`,
+        width: `${state.position.width}px`,
+        height: `${state.position.height}px`,
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>

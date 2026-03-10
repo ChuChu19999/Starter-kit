@@ -27,7 +27,21 @@ const Layout = ({
       <div className={`${headerClassName || ''} header`}>
         <p className="header-text">{title}</p>
         {settings && (
-          <BiCog color="#BDBFC1" size={25} className="header-settings" onClick={onSettingsClick} />
+          <span
+            className="header-settings"
+            role="button"
+            tabIndex={0}
+            onClick={onSettingsClick}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSettingsClick?.();
+              }
+            }}
+            aria-label="Настройки"
+          >
+            <BiCog color="#BDBFC1" size={25} aria-hidden />
+          </span>
         )}
       </div>
       <div className="content">{children}</div>

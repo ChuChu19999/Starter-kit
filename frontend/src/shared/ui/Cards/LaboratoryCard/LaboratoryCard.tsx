@@ -35,8 +35,21 @@ const LaboratoryCard = ({
     onDelete?.(laboratory, e);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick?.(laboratory);
+    }
+  };
+
   return (
-    <div className="laboratory-card" onClick={() => onClick?.(laboratory)}>
+    <div
+      className="laboratory-card"
+      role="button"
+      tabIndex={0}
+      onClick={() => onClick?.(laboratory)}
+      onKeyDown={handleKeyDown}
+    >
       <div className="laboratory-card-content">
         <div className="laboratory-card-header">
           <ExperimentOutlined className="laboratory-icon" />
@@ -55,7 +68,12 @@ const LaboratoryCard = ({
         )}
       </div>
       {showActions && (
-        <div className="laboratory-card-actions" onClick={e => e.stopPropagation()}>
+        <div
+          className="laboratory-card-actions"
+          role="group"
+          onClick={e => e.stopPropagation()}
+          onKeyDown={e => e.stopPropagation()}
+        >
           <div className="button-wrapper">
             <Button
               title="Редактировать"

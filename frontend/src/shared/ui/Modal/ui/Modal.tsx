@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { BiX } from 'react-icons/bi';
 import Button from '../../Button/Button';
@@ -52,10 +52,6 @@ const Modal = ({
     type: '',
   });
   const [isClosing, setIsClosing] = useState(false);
-
-  useEffect(() => {
-    setIsClosing(false);
-  }, []);
 
   const chooseFunc = (type: string) => {
     switch (type) {
@@ -116,13 +112,31 @@ const Modal = ({
     <>
       <div className={`modal-overlay ${isClosing ? 'fade-out' : 'fade-in'}`} />
       <div
+        role="dialog"
+        aria-modal="true"
+        tabIndex={-1}
         className={`modal-wrapper ${isClosing ? 'modal-closing' : 'modal-opening'} ${modalWidth ? `modal-width-${modalWidth}` : ''}`}
         style={style}
         onClick={handleModalClick}
+        onKeyDown={e => e.stopPropagation()}
       >
         <div className="modal-header">
           <p>{header}</p>
-          <BiX size={25} className="modal-close" onClick={() => handleClick('close')} />
+          <span
+            className="modal-close"
+            role="button"
+            tabIndex={0}
+            onClick={() => handleClick('close')}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleClick('close');
+              }
+            }}
+            aria-label="Закрыть"
+          >
+            <BiX size={25} aria-hidden />
+          </span>
         </div>
 
         <div className="body">

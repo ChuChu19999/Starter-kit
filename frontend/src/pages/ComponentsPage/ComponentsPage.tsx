@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useReducer, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Form } from 'antd';
 import { ConfirmationModal } from '../../entities/ConfirmationModal';
@@ -26,12 +26,51 @@ import { NavigationBar } from '../../widgets/NavigationBar';
 import { UserInfo } from '../../widgets/UserInfo';
 import './ComponentsPage.css';
 
+interface ComponentsPageState {
+  modalOpen: boolean;
+  loadingCardLoading: boolean;
+  tourOpen: boolean;
+  confirmationModalOpen: boolean;
+  selectedEmployee: Employee | null;
+}
+
+type ComponentsPageAction =
+  | { type: 'SET_MODAL_OPEN'; payload: boolean }
+  | { type: 'SET_LOADING_CARD_LOADING'; payload: boolean }
+  | { type: 'SET_TOUR_OPEN'; payload: boolean }
+  | { type: 'SET_CONFIRMATION_MODAL_OPEN'; payload: boolean }
+  | { type: 'SET_SELECTED_EMPLOYEE'; payload: Employee | null };
+
+const initialState: ComponentsPageState = {
+  modalOpen: false,
+  loadingCardLoading: false,
+  tourOpen: false,
+  confirmationModalOpen: false,
+  selectedEmployee: null,
+};
+
+function componentsPageReducer(
+  state: ComponentsPageState,
+  action: ComponentsPageAction
+): ComponentsPageState {
+  switch (action.type) {
+    case 'SET_MODAL_OPEN':
+      return { ...state, modalOpen: action.payload };
+    case 'SET_LOADING_CARD_LOADING':
+      return { ...state, loadingCardLoading: action.payload };
+    case 'SET_TOUR_OPEN':
+      return { ...state, tourOpen: action.payload };
+    case 'SET_CONFIRMATION_MODAL_OPEN':
+      return { ...state, confirmationModalOpen: action.payload };
+    case 'SET_SELECTED_EMPLOYEE':
+      return { ...state, selectedEmployee: action.payload };
+    default:
+      return state;
+  }
+}
+
 const ComponentsPage = () => {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [loadingCardLoading, setLoadingCardLoading] = useState(false);
-  const [tourOpen, setTourOpen] = useState(false);
-  const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [state, dispatch] = useReducer(componentsPageReducer, initialState);
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -44,7 +83,7 @@ const ComponentsPage = () => {
 
   return (
     <Layout title="Путеводитель по компонентам">
-      <LoadingCard loading={loadingCardLoading} />
+      <LoadingCard loading={state.loadingCardLoading} />
       <div className="components-page-content">
         {/* Shared UI Components */}
         <section className="components-section">
@@ -63,18 +102,30 @@ const ComponentsPage = () => {
             <div className="component-card">
               <h4>Tooltip</h4>
               <Tooltip {...{ title: 'Пример подсказки' }}>
-                <span style={{ color: '#000' }}>Наведите на меня</span>
+                <span
+                  role="button"
+                  tabIndex={0}
+                  style={{ color: '#000' }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') e.preventDefault();
+                  }}
+                >
+                  Наведите на меня
+                </span>
               </Tooltip>
             </div>
 
             <div className="component-card" ref={tourCardRef}>
               <h4>Tour</h4>
               <div ref={tourButtonRef}>
-                <Button title="Запустить тур" onClick={() => setTourOpen(true)} />
+                <Button
+                  title="Запустить тур"
+                  onClick={() => dispatch({ type: 'SET_TOUR_OPEN', payload: true })}
+                />
               </div>
               <Tour
-                open={tourOpen}
-                onClose={() => setTourOpen(false)}
+                open={state.tourOpen}
+                onClose={() => dispatch({ type: 'SET_TOUR_OPEN', payload: false })}
                 steps={[
                   {
                     title: 'Добро пожаловать!',
@@ -193,14 +244,17 @@ const ComponentsPage = () => {
           <div className="components-grid">
             <div className="component-card">
               <h4>Modal</h4>
-              <Button title="Открыть модальное окно" onClick={() => setModalOpen(true)} />
-              {modalOpen && (
+              <Button
+                title="Открыть модальное окно"
+                onClick={() => dispatch({ type: 'SET_MODAL_OPEN', payload: true })}
+              />
+              {state.modalOpen && (
                 <Modal
                   header="Пример модального окна"
-                  onClose={() => setModalOpen(false)}
+                  onClose={() => dispatch({ type: 'SET_MODAL_OPEN', payload: false })}
                   onSave={() => {
                     console.log('Saved');
-                    setModalOpen(false);
+                    dispatch({ type: 'SET_MODAL_OPEN', payload: false });
                   }}
                   saveButtonText="Сохранить"
                 >
@@ -223,19 +277,19 @@ const ComponentsPage = () => {
               </p>
               <Button
                 title="Открыть модалку подтверждения"
-                onClick={() => setConfirmationModalOpen(true)}
+                onClick={() => dispatch({ type: 'SET_CONFIRMATION_MODAL_OPEN', payload: true })}
               />
               <ConfirmationModal
-                open={confirmationModalOpen}
+                open={state.confirmationModalOpen}
                 title="Подтверждение действия"
                 message="Вы уверены, что хотите выполнить это действие?"
                 confirmText="Подтвердить"
                 cancelText="Отмена"
                 onConfirm={() => {
                   console.log('Действие подтверждено');
-                  setConfirmationModalOpen(false);
+                  dispatch({ type: 'SET_CONFIRMATION_MODAL_OPEN', payload: false });
                 }}
-                onCancel={() => setConfirmationModalOpen(false)}
+                onCancel={() => dispatch({ type: 'SET_CONFIRMATION_MODAL_OPEN', payload: false })}
                 style={{ width: '400px', maxWidth: '90vw' }}
               />
             </div>
@@ -246,8 +300,8 @@ const ComponentsPage = () => {
               </p>
               <div style={{ maxWidth: 360 }}>
                 <UserPicker
-                  value={selectedEmployee}
-                  onChange={setSelectedEmployee}
+                  value={state.selectedEmployee}
+                  onChange={emp => dispatch({ type: 'SET_SELECTED_EMPLOYEE', payload: emp })}
                   placeholder="Введите ФИО сотрудника"
                 />
               </div>
@@ -310,10 +364,9 @@ const ComponentsPage = () => {
               <Button
                 title="Показать загрузку"
                 onClick={() => {
-                  setLoadingCardLoading(false);
-                  // Небольшая задержка, чтобы гарантировать изменение состояния
+                  dispatch({ type: 'SET_LOADING_CARD_LOADING', payload: false });
                   setTimeout(() => {
-                    setLoadingCardLoading(true);
+                    dispatch({ type: 'SET_LOADING_CARD_LOADING', payload: true });
                   }, 10);
                 }}
               />

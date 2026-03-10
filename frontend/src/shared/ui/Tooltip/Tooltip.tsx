@@ -22,7 +22,7 @@ const TooltipLocal = ({
   return (
     <AntTooltip placement={placement} trigger={trigger} {...props}>
       {children || (
-        <span className="tooltip-icon-wrapper">
+        <span className="tooltip-icon-wrapper" role="img" aria-hidden="true">
           <BiHelpCircle size={22} />
         </span>
       )}

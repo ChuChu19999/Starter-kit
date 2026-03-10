@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { App as AntApp, ConfigProvider, message } from 'antd';
 import ruRU from 'antd/locale/ru_RU';
@@ -7,6 +7,7 @@ import '../shared/assets/fonts/fonts.css';
 import './App.css';
 import Page404 from '../pages/ErrorPages/Page404/Page404';
 import LoadingPage from '../pages/LoadingPage/LoadingPage';
+import { ReloadPage } from '../pages/ReloadPage/ReloadPage';
 import { useAxiosInterceptors } from '../shared/model/auth/useAxiosInterceptors';
 import { useKeycloak } from '../shared/model/auth/useKeycloak';
 import ProtectedRoute from '../shared/ui/ProtectedRoute/ProtectedRoute';
@@ -40,11 +41,6 @@ export default function App() {
 
   const messageConfigRef = useRef(false);
   const isAdmin = true; // По умолчанию админ для Starter-kit (без проверки роли)
-
-  // Компонент для промежуточной перезагрузки
-  const ReloadComponent = () => {
-    return <Navigate to="/" replace />;
-  };
 
   // Конфигурация для сообщений после монтирования компонента
   useEffect(() => {
@@ -117,14 +113,10 @@ export default function App() {
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Content username={username || ''} isAdmin={isAdmin} />}>
-                  <Route path="/reload" element={<ReloadComponent />} />
+                  <Route path="/reload" element={<ReloadPage />} />
                   <>
-                    {getAllRoutes.map((item, index) => (
-                      <Route
-                        key={`${item.path}-${index}`}
-                        path={item.path}
-                        element={item.element}
-                      />
+                    {getAllRoutes.map(item => (
+                      <Route key={item.path} path={item.path} element={item.element} />
                     ))}
                     <Route path="*" element={<Page404 />} />
                   </>

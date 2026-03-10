@@ -19,7 +19,9 @@ const FormItem = ({ title, divider, tooltip, children, ...formItemProps }: FormI
           {title}
           {tooltip && (
             <Tooltip title={tooltip}>
-              <BiInfoCircle size={16} />
+              <span role="img" aria-hidden="true">
+                <BiInfoCircle size={16} />
+              </span>
             </Tooltip>
           )}
         </div>

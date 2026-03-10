@@ -75,11 +75,20 @@ const ElementsList = ({ formName, formData }: ElementsListProps) => {
                             <Checkbox className="checkbox" />
                           </Tooltip>
                         </Form.Item>
-                        <BiX
-                          size={20}
+                        <span
+                          role="button"
+                          tabIndex={0}
                           className="button-delete-item"
                           onClick={() => handleRemove(name, remove)}
-                        />
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              handleRemove(name, remove);
+                            }
+                          }}
+                        >
+                          <BiX size={20} />
+                        </span>
                       </Col>
                     </Row>
                   </Col>

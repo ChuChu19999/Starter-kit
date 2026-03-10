@@ -20,11 +20,11 @@ class Settings(BaseSettings):
 
     KEYCLOAK_PUBLIC_KEY_URL: str = ""
 
-    CERT_PATH: str = "/usr/local/share/ca-certificates/root.crt"
+    CERT_PATH: str = ""
 
     HR_API_URL: str = ""
 
-    LOG_HEADERS: bool = False
+    LOG_HEADERS: bool
 
     @property
     def DATABASE_SCHEMA(self) -> str:

@@ -20,118 +20,65 @@ type RouterItem = {
   doNotShowChildrenInSideBar?: boolean;
 };
 
-const SideBar = ({ username, isAdmin, onMinimizeChange }: SideBarProps) => {
-  const [minimize, setMinimize] = useState(false);
-  const [openSubmenus, setOpenSubmenus] = useState<string[]>([]);
-  const buttonRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
-  const location = useLocation();
+interface SideBarMenuItemsProps {
+  items: RouterItem[];
+  level: number;
+  parentPath: string;
+  openSubmenus: string[];
+  pathname: string;
+  search: string;
+  minimize: boolean;
+  getBasePath: (pathname: string) => string;
+  toggleSubmenu: (path: string, level: number) => void;
+  openLocationSubmenus: () => void;
+  navigate: (opts: { pathname: string; search: string }, opts2: { replace: boolean }) => void;
+  setOpenSubmenus: React.Dispatch<React.SetStateAction<string[]>>;
+  setMinimize: (value: boolean) => void;
+  buttonRef: React.RefObject<HTMLDivElement | null>;
+}
 
-  // Получение базового пути страницы (первый сегмент пути)
-  const getBasePath = useCallback((pathname: string): string => {
-    if (pathname === '/') {
-      return '/';
-    }
-    const segments = pathname.split('/').filter(segment => segment.length > 0);
-    return segments.length > 0 ? `/${segments[0]}` : '/';
-  }, []);
-
-  // Фильтруем роуты в зависимости от роли
-  // Для не-админов доступны только: главная и помощь
-  const allowedRoutes = isAdmin
-    ? routersData
-    : routersData.filter(route => route.path === '/' || route.path === '/help');
-
-  const toggleSubmenu = useCallback(
-    (path: string, level = 0) => {
-      const isOpen = openSubmenus.includes(path);
-
-      if (level === 0) {
-        if (isOpen) {
-          setOpenSubmenus([]);
-          return;
-        }
-
-        setOpenSubmenus([path]);
-        return;
-      }
-
-      if (isOpen) {
-        setOpenSubmenus(prevSubmenus => prevSubmenus.filter(item => !item.startsWith(path)));
-        return;
-      }
-
-      setOpenSubmenus(prevSubmenus => [...prevSubmenus, path]);
-    },
-    [openSubmenus]
-  );
-
-  const openLocationSubmenus = useCallback(() => {
-    let previousPath = '';
-
-    const locationSplit = location.pathname.split('/').filter(item => item.length);
-
-    locationSplit.pop();
-
-    const locationPaths = locationSplit.map(item => {
-      previousPath += '/' + item;
-      return previousPath;
-    });
-
-    locationPaths.forEach((item, index) => toggleSubmenu(item, index));
-  }, [location, toggleSubmenu]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (openSubmenus.length && !buttonRef.current?.contains(event.target as Node)) {
-        setOpenSubmenus([]);
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, [openSubmenus.length]);
-
-  const toggleMenu = () => {
-    const newMinimize = !minimize;
-    setMinimize(newMinimize);
-    onMinimizeChange?.(newMinimize);
-    setOpenSubmenus([]);
-  };
-
-  const renderItems = (items: RouterItem[], level = 0, parentPath = '') =>
-    items.map(item => {
+const SideBarMenuItems = ({
+  items,
+  level,
+  parentPath,
+  openSubmenus,
+  pathname,
+  search,
+  minimize,
+  getBasePath,
+  toggleSubmenu,
+  openLocationSubmenus,
+  navigate,
+  setOpenSubmenus,
+  setMinimize,
+  buttonRef,
+}: SideBarMenuItemsProps) => (
+  <>
+    {items.map(item => {
       const currentPath = `${parentPath}${item.path}`;
       const isOpen = openSubmenus.includes(currentPath);
       const isCurrentPath =
         ((!openSubmenus.length || level !== 0) &&
-          (location.pathname === currentPath ||
-            (currentPath === '/users' && location.pathname.startsWith('/user-cabinet/')))) ||
+          (pathname === currentPath ||
+            (currentPath === '/users' && pathname.startsWith('/user-cabinet/')))) ||
         isOpen;
 
       const openSubmenu = (e: React.MouseEvent) => {
         e.stopPropagation();
         setMinimize(false);
-
-        if (location.pathname !== '/' && location.pathname.startsWith(currentPath)) {
+        if (pathname !== '/' && pathname.startsWith(currentPath)) {
           openLocationSubmenus();
           return;
         }
-
         toggleSubmenu(currentPath, level);
       };
 
       const navigateOnClick = () => {
         const targetPath = currentPath || '/';
-        // Определяем базовые пути текущей и целевой страниц
-        const currentBasePath = getBasePath(location.pathname);
+        const currentBasePath = getBasePath(pathname);
         const targetBasePath = getBasePath(targetPath);
-        // Сохраняем query параметры только если остаемся на той же странице
-        const search = currentBasePath === targetBasePath ? location.search : '';
-        // Делаем навигацию
-        navigate({ pathname: targetPath, search }, { replace: true });
+        const searchToKeep = currentBasePath === targetBasePath ? search : '';
+        navigate({ pathname: targetPath, search: searchToKeep }, { replace: true });
         setOpenSubmenus([]);
       };
 
@@ -139,12 +86,24 @@ const SideBar = ({ username, isAdmin, onMinimizeChange }: SideBarProps) => {
         <li key={currentPath} className="sidebar-item">
           <div
             ref={buttonRef}
+            role="button"
+            tabIndex={0}
             className={`${isCurrentPath ? 'menu-item-active' : 'menu-item'} item-level-${level} menu-item-transition`}
             onClick={
               item.children?.length && !item.doNotShowChildrenInSideBar
                 ? openSubmenu
                 : navigateOnClick
             }
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                if (item.children?.length && !item.doNotShowChildrenInSideBar) {
+                  openSubmenu(e as unknown as React.MouseEvent);
+                } else {
+                  navigateOnClick();
+                }
+              }
+            }}
           >
             {item.icon}
             <span>{item.label}</span>
@@ -155,13 +114,96 @@ const SideBar = ({ username, isAdmin, onMinimizeChange }: SideBarProps) => {
               className={`submenu level-${level + 1} ${minimize ? 'submenu-margin-collapsed' : 'submenu-margin-expanded'}`}
             >
               <div className="submenu-title">{item.label}</div>
-
-              {renderItems(item.children, level + 1, currentPath)}
+              <SideBarMenuItems
+                items={item.children}
+                level={level + 1}
+                parentPath={currentPath}
+                openSubmenus={openSubmenus}
+                pathname={pathname}
+                search={search}
+                minimize={minimize}
+                getBasePath={getBasePath}
+                toggleSubmenu={toggleSubmenu}
+                openLocationSubmenus={openLocationSubmenus}
+                navigate={navigate}
+                setOpenSubmenus={setOpenSubmenus}
+                setMinimize={setMinimize}
+                buttonRef={buttonRef}
+              />
             </ul>
           )}
         </li>
       );
+    })}
+  </>
+);
+
+const SideBar = ({ username, isAdmin, onMinimizeChange }: SideBarProps) => {
+  const [minimize, setMinimize] = useState(false);
+  const [openSubmenus, setOpenSubmenus] = useState<string[]>([]);
+  const buttonRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const getBasePath = useCallback((pathname: string): string => {
+    if (pathname === '/') {
+      return '/';
+    }
+    const segments = pathname.split('/').filter(segment => segment.length > 0);
+    return segments.length > 0 ? `/${segments[0]}` : '/';
+  }, []);
+
+  const allowedRoutes = isAdmin
+    ? routersData
+    : routersData.filter(route => route.path === '/' || route.path === '/help');
+
+  const toggleSubmenu = useCallback(
+    (path: string, level = 0) => {
+      const isOpen = openSubmenus.includes(path);
+      if (level === 0) {
+        if (isOpen) {
+          setOpenSubmenus([]);
+          return;
+        }
+        setOpenSubmenus([path]);
+        return;
+      }
+      if (isOpen) {
+        setOpenSubmenus(prevSubmenus => prevSubmenus.filter(item => !item.startsWith(path)));
+        return;
+      }
+      setOpenSubmenus(prevSubmenus => [...prevSubmenus, path]);
+    },
+    [openSubmenus]
+  );
+
+  const openLocationSubmenus = useCallback(() => {
+    let previousPath = '';
+    const locationSplit = location.pathname.split('/').filter(item => item.length);
+    locationSplit.pop();
+    const locationPaths = locationSplit.map(item => {
+      previousPath += '/' + item;
+      return previousPath;
     });
+    locationPaths.forEach((item, index) => toggleSubmenu(item, index));
+  }, [location, toggleSubmenu]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (openSubmenus.length && !buttonRef.current?.contains(event.target as Node)) {
+        setOpenSubmenus([]);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [openSubmenus.length]);
+
+  const toggleMenu = () => {
+    const newMinimize = !minimize;
+    setMinimize(newMinimize);
+    onMinimizeChange?.(newMinimize);
+    setOpenSubmenus([]);
+  };
 
   return (
     <div ref={buttonRef} className={`sidebar-wrapper ${minimize ? 'collapsed' : ''}`}>
@@ -171,10 +213,20 @@ const SideBar = ({ username, isAdmin, onMinimizeChange }: SideBarProps) => {
             src={logoImage}
             alt="Starter Kit"
             className={`sidebar-logo ${minimize ? 'collapsed' : ''}`}
+            role="button"
+            tabIndex={0}
             onClick={() => {
               const currentBasePath = getBasePath(location.pathname);
               const search = currentBasePath === '/' ? location.search : '';
               navigate({ pathname: '/', search }, { replace: true });
+            }}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                const currentBasePath = getBasePath(location.pathname);
+                const search = currentBasePath === '/' ? location.search : '';
+                navigate({ pathname: '/', search }, { replace: true });
+              }
             }}
             onMouseEnter={e => {
               e.currentTarget.style.opacity = '0.8';
@@ -187,11 +239,41 @@ const SideBar = ({ username, isAdmin, onMinimizeChange }: SideBarProps) => {
           />
         </div>
 
-        <ul className="sidebar">{renderItems(allowedRoutes)}</ul>
+        <ul className="sidebar">
+          <SideBarMenuItems
+            items={allowedRoutes}
+            level={0}
+            parentPath=""
+            openSubmenus={openSubmenus}
+            pathname={location.pathname}
+            search={location.search}
+            minimize={minimize}
+            getBasePath={getBasePath}
+            toggleSubmenu={toggleSubmenu}
+            openLocationSubmenus={openLocationSubmenus}
+            navigate={navigate}
+            setOpenSubmenus={setOpenSubmenus}
+            setMinimize={setMinimize}
+            buttonRef={buttonRef}
+          />
+        </ul>
       </div>
 
       <div className="footer">
-        <BiChevronsRight className="arrowButton" size={25} onClick={toggleMenu} />
+        <span
+          role="button"
+          tabIndex={0}
+          className="arrowButton"
+          onClick={toggleMenu}
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              toggleMenu();
+            }
+          }}
+        >
+          <BiChevronsRight size={25} />
+        </span>
 
         <div className="user">
           <BiUser className="user-icon" size={25} />
