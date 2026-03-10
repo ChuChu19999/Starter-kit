@@ -113,12 +113,12 @@ const UserInfo: React.FC<UserInfoProps> = ({ userCabinet, employeeData }) => {
           <h2 className="user-info-name">{displayName}</h2>
           <div className="user-info-fields">
             <div className="user-info-field">
-              <span className="user-info-field-label">Отдел:</span>
-              <span className="user-info-field-value">{displayDepartment}</span>
-            </div>
-            <div className="user-info-field">
               <span className="user-info-field-label">Подразделение:</span>
               <span className="user-info-field-value">{displayDivision}</span>
+            </div>
+            <div className="user-info-field">
+              <span className="user-info-field-label">Отдел:</span>
+              <span className="user-info-field-value">{displayDepartment}</span>
             </div>
             <div className="user-info-field">
               <span className="user-info-field-label">Должность:</span>
