@@ -8,6 +8,7 @@ import './App.css';
 import Page404 from '../pages/ErrorPages/Page404/Page404';
 import LoadingPage from '../pages/LoadingPage/LoadingPage';
 import { ReloadPage } from '../pages/ReloadPage/ReloadPage';
+import { BASE_PATH } from '../shared/config/process';
 import { useAxiosInterceptors } from '../shared/model/auth/useAxiosInterceptors';
 import { useKeycloak } from '../shared/model/auth/useKeycloak';
 import ProtectedRoute from '../shared/ui/ProtectedRoute/ProtectedRoute';
@@ -110,7 +111,7 @@ export default function App() {
       <ConfigProvider locale={ruRU}>
         <AntApp>
           <div>
-            <BrowserRouter>
+            <BrowserRouter basename={BASE_PATH}>
               <Routes>
                 <Route path="/" element={<Content username={username || ''} isAdmin={isAdmin} />}>
                   <Route path="/reload" element={<ReloadPage />} />
