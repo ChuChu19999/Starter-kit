@@ -77,10 +77,10 @@ export class TanstackQueryApiClient {
   ) {
     const queryKey = createQueryKey(path as string, params[0]);
     const query = {
-      /** type-only property if you need easy access to the endpoint params */
+      /** Только для типов: удобный доступ к параметрам эндпоинта. */
       '~endpoint': {} as TEndpoint,
       queryKey,
-      queryFn: {} as 'You need to pass .queryOptions to the useQuery hook',
+      queryFn: {} as 'В useQuery передавайте .queryOptions',
       queryOptions: queryOptions({
         queryFn: async ({ queryKey, signal }) => {
           const requestParams = {
@@ -107,10 +107,10 @@ export class TanstackQueryApiClient {
   ) {
     const queryKey = createQueryKey(path as string, params[0]);
     const query = {
-      /** type-only property if you need easy access to the endpoint params */
+      /** Только для типов: удобный доступ к параметрам эндпоинта. */
       '~endpoint': {} as TEndpoint,
       queryKey,
-      queryFn: {} as 'You need to pass .queryOptions to the useQuery hook',
+      queryFn: {} as 'В useQuery передавайте .queryOptions',
       queryOptions: queryOptions({
         queryFn: async ({ queryKey, signal }) => {
           const requestParams = {
@@ -132,8 +132,8 @@ export class TanstackQueryApiClient {
 
   // <ApiClient.request>
   /**
-   * Generic mutation method with full type-safety for any endpoint; it doesnt require parameters to be passed initially
-   * but instead will require them to be passed when calling the mutation.mutate() method
+   * Универсальная мутация с полной типизацией для любого эндпоинта.
+   * Параметры можно не передавать при создании, а передать при вызове mutation.mutate().
    */
   mutation<
     TMethod extends keyof EndpointByMethod,
@@ -183,16 +183,16 @@ export class TanstackQueryApiClient {
         throw new TypedStatusError(response as never);
       }
 
-      // Return just the data if withResponse is false, otherwise return the full response
+      // При withResponse: false возвращаем только data, иначе — полный ответ.
       const finalResponse = withResponse ? response : response.data;
       const res = selectFn ? selectFn(finalResponse as any) : finalResponse;
       return res as never;
     };
     return {
-      /** type-only property if you need easy access to the endpoint params */
+      /** Только для типов: удобный доступ к параметрам эндпоинта. */
       '~endpoint': {} as TEndpoint,
       mutationKey: mutationKey,
-      mutationFn: {} as 'You need to pass .mutationOptions to the useMutation hook',
+      mutationFn: {} as 'В useMutation передавайте .mutationOptions',
       mutationOptions: {
         throwOnError: options?.throwOnError as boolean | ((error: TError) => boolean),
         mutationKey: mutationKey,

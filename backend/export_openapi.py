@@ -1,16 +1,14 @@
 """
-Скрипт экспорта OpenAPI-схемы в JSON без запуска сервера.
-Используется для генерации TypeScript-клиента во фронтенде.
+Скрипт для генерации TypeScript-клиента во фронтенде.
 
 Запуск из корня backend: python export_openapi.py [путь/к/openapi.json]
 По умолчанию пишет в ../frontend/openapi.json.
 """
 
-import json
 import sys
 from pathlib import Path
+import orjson
 
-# Запуск предполагается из директории backend
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from main import app
@@ -24,6 +22,7 @@ if __name__ == "__main__":
     out_path = out_path.resolve()
     out_path.parent.mkdir(parents=True, exist_ok=True)
     schema = app.openapi()
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(schema, f, ensure_ascii=False, indent=2)
+    payload = orjson.dumps(schema, option=orjson.OPT_INDENT_2)
+    with open(out_path, "wb") as f:
+        f.write(payload)
     print(f"OpenAPI schema written to {out_path}")
