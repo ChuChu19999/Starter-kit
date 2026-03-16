@@ -1,0 +1,431 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Starter-kit API",
+    "description": "FastAPI application with Keycloak authentication",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/me/": {
+      "get": {
+        "tags": ["user"],
+        "summary": "Получение информации о текущем пользователе",
+        "description": "Возвращает информацию о текущем авторизованном пользователе на основе JWT токена. Извлекает данные пользователя из токена, включая hashSnils и другие атрибуты.",
+        "operationId": "get_current_user_info_api_me__get",
+        "responses": {
+          "200": {
+            "description": "Информация о пользователе успешно получена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                },
+                "example": {
+                  "hashSnils": "e1cee128188b77f382eec32ca80494e6",
+                  "username": "user@example.com"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Токен отсутствует или невалидный"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/employees/search/": {
+      "get": {
+        "tags": ["employees"],
+        "summary": "Поиск сотрудников по ФИО",
+        "description": "Выполняет поиск сотрудников в HR API по части ФИО. Минимальная длина поискового запроса - 3 символа. Возвращает список сотрудников с их данными, включая опционально фотографии.",
+        "operationId": "search_employees_api_employees_search__get",
+        "parameters": [
+          {
+            "name": "searchFio",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 3,
+              "description": "Часть ФИО для поиска (минимум 3 символа)",
+              "examples": ["Иванов"],
+              "title": "Searchfio"
+            },
+            "description": "Часть ФИО для поиска (минимум 3 символа)"
+          },
+          {
+            "name": "includePhoto",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Включать ли фотографии сотрудников в ответ",
+              "default": true,
+              "title": "Includephoto"
+            },
+            "description": "Включать ли фотографии сотрудников в ответ"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список найденных сотрудников",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": [
+                  {
+                    "hashMd5": "abc123...",
+                    "fullName": "Иванов Иван Иванович",
+                    "department": "Отдел IT",
+                    "photo": "base64..."
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Поисковый запрос слишком короткий (менее 3 символов)"
+          },
+          "503": {
+            "description": "Ошибка при обращении к HR API"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/employees/{hash_md5}/": {
+      "get": {
+        "tags": ["employees"],
+        "summary": "Получение информации о сотруднике",
+        "description": "Возвращает полную информацию о сотруднике по его hashMd5 (hsnils). Данные получаются из HR API. Может включать фотографию сотрудника.",
+        "operationId": "get_employee_api_employees__hash_md5___get",
+        "parameters": [
+          {
+            "name": "hash_md5",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Hash Md5"
+            }
+          },
+          {
+            "name": "includePhoto",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Включать ли фотографии в ответ",
+              "default": true,
+              "title": "Includephoto"
+            },
+            "description": "Включать ли фотографии в ответ"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Информация о сотруднике",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "hashMd5": "abc123...",
+                  "fullName": "Иванов Иван Иванович",
+                  "department": "Отдел IT",
+                  "division": "Разработка",
+                  "login": "ivanov",
+                  "photo": "base64..."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Не указан hashMd5"
+          },
+          "404": {
+            "description": "Сотрудник не найден"
+          },
+          "503": {
+            "description": "Ошибка при обращении к HR API"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/employees/by-hashes/": {
+      "post": {
+        "tags": ["employees"],
+        "summary": "Получение информации о сотрудниках (батч)",
+        "description": "Возвращает информацию о нескольких сотрудниках по массиву hashMd5. Полезно для получения данных о множестве сотрудников одним запросом. Если массив пуст, возвращается пустой объект.",
+        "operationId": "get_employees_by_hashes_endpoint_api_employees_by_hashes__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmployeesByHashesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Словарь с информацией о сотрудниках, где ключ - hashMd5",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "abc123...": {
+                    "hashMd5": "abc123...",
+                    "fullName": "Иванов Иван Иванович",
+                    "department": "Отдел IT"
+                  },
+                  "def456...": {
+                    "hashMd5": "def456...",
+                    "fullName": "Петров Петр Петрович",
+                    "department": "Отдел продаж"
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Ошибка при обращении к HR API"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/": {
+      "get": {
+        "summary": "Root",
+        "description": "Информация о доступных API эндпоинтах.",
+        "operationId": "root_api__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health/": {
+      "get": {
+        "summary": "Проверка состояния API",
+        "description": "Эндпоинт для проверки работоспособности API. Используется для мониторинга и health checks.",
+        "operationId": "health_api_health__get",
+        "responses": {
+          "200": {
+            "description": "API работает",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EmployeesByHashesRequest": {
+        "properties": {
+          "hashesMd5": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Hashesmd5"
+          },
+          "includePhoto": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Includephoto",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": ["hashesMd5"],
+        "title": "EmployeesByHashesRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "UserResponse": {
+        "properties": {
+          "personnel_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Personnel Number"
+          },
+          "department_number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Department Number"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "ad_login": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ad Login"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "hsnils": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hsnils"
+          },
+          "is_staff": {
+            "type": "boolean",
+            "title": "Is Staff",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "UserResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": ["loc", "msg", "type"],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "fix": "eslint . --fix",
     "preview": "vite preview",
-    "react-doctor": "react-doctor ."
+    "react-doctor": "react-doctor .",
+    "generate:api": "npx typed-openapi openapi.json -o src/shared/api/generated.ts --tanstack"
   },
   "dependencies": {
     "@ant-design/icons": "^6.1.0",
@@ -36,6 +37,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "typed-openapi": "^2.2.4",
     "@types/color-convert": "^2.0.4",
     "@types/node": "^24.10.0",
     "@types/react": "^19.2.2",
