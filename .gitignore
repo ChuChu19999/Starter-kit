@@ -18,8 +18,6 @@ backend/dist/
 backend/build/
 backend/.coverage
 backend/htmlcov/
-backend/alembic/versions/*.py
-!backend/alembic/versions/__init__.py
 
 # Frontend (React)
 node_modules/

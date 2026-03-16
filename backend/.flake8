@@ -6,7 +6,6 @@ exclude =
     venv,
     .venv,
     migrations,
-    alembic/versions,
     build,
     dist,
     *.egg-info
@@ -18,4 +17,3 @@ ignore = E501
 enable-extensions = TID
 per-file-ignores =
     __init__.py:E402
-    alembic/env.py:E402
