@@ -1,6 +1,7 @@
 import { useReducer, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Form } from 'antd';
+import { Form, message } from 'antd';
+import { z } from 'zod';
 import { ConfirmationModal } from '../../entities/ConfirmationModal';
 import { ResetFiltersButton } from '../../entities/ResetFiltersButton';
 import { UserPicker, type Employee } from '../../entities/UserPicker';
@@ -9,6 +10,7 @@ import ElementsList from '../../features/FormItems/ui/ElementsList/ElementsList'
 import FormItem from '../../features/FormItems/ui/FormItem/FormItem';
 import errorAnimation404 from '../../shared/assets/animations/404_1.json';
 import errorAnimation503 from '../../shared/assets/animations/503_1.json';
+import { zodToFormErrors } from '../../shared/lib/form/zodToFormErrors';
 import Bubble from '../../shared/ui/Bubble/Bubble';
 import Button from '../../shared/ui/Button/Button';
 import {
@@ -25,6 +27,14 @@ import Tour from '../../shared/ui/Tour/Tour';
 import { NavigationBar } from '../../widgets/NavigationBar';
 import { UserInfo } from '../../widgets/UserInfo';
 import './ComponentsPage.css';
+
+const componentsFormSchema = z.object({
+  exampleField: z.string().min(1, 'Обязательное поле').regex(/^\d+$/, 'Введите только цифры'),
+  elements: z
+    .array(z.object({ name: z.string().optional(), checkbox: z.boolean().optional() }))
+    .optional(),
+  example: z.union([z.string(), z.number()]).optional(),
+});
 
 interface ComponentsPageState {
   modalOpen: boolean;
@@ -79,6 +89,31 @@ const ComponentsPage = () => {
 
   const handleResetFilters = () => {
     console.log('Фильтры сброшены');
+  };
+
+  const handleCheckZod = () => {
+    const values = form.getFieldsValue();
+    const result = componentsFormSchema.safeParse(values);
+    if (!result.success) {
+      form.setFields(zodToFormErrors(result.error));
+      message.warning('Исправьте ошибки в форме');
+      return;
+    }
+    clearZodFormErrors(form);
+    message.success('Валидация успешно пройдена');
+  };
+
+  const clearZodFormErrors = (f: ReturnType<typeof Form.useForm>[0]) => {
+    const err = f.getFieldsError();
+    const namesToClear: (string | number)[][] = [['exampleField']];
+    if (Array.isArray(err)) {
+      for (const e of err) {
+        if (e?.errors?.length && e?.name) {
+          namesToClear.push(e.name as (string | number)[]);
+        }
+      }
+    }
+    f.setFields(namesToClear.map(name => ({ name, errors: [] as string[] })));
   };
 
   return (
@@ -386,8 +421,16 @@ const ComponentsPage = () => {
             </div>
 
             <div className="component-card">
-              <h4>FormItem</h4>
-              <Form form={form}>
+              <h4>FormItem + проверка Zod</h4>
+              <Form
+                form={form}
+                onValuesChange={(_, allValues) => {
+                  const result = componentsFormSchema.safeParse(allValues);
+                  if (result.success) {
+                    clearZodFormErrors(form);
+                  }
+                }}
+              >
                 <FormItem
                   title="Название поля"
                   tooltip="Это подсказка для поля"
@@ -395,6 +438,7 @@ const ComponentsPage = () => {
                 >
                   <InputText placeholder="Введите значение" rows={2} />
                 </FormItem>
+                <Button title="Проверить Zod" type="primary" onClick={handleCheckZod} />
               </Form>
             </div>
           </div>
