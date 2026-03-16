@@ -15,20 +15,16 @@ const LoadingPage = ({ isLoading, onFadeOutComplete }: LoadingPageProps) => {
 
   useEffect(() => {
     if (isLoading) {
-      setShouldShow(true);
-      return;
+      const id = setTimeout(() => setShouldShow(true), 0);
+      return () => clearTimeout(id);
     }
 
-    // Засекаем время начала загрузки
     const startTime = Date.now();
-
-    // Вычисляем, сколько времени осталось до минимального времени отображения
     const remainingTime = Math.max(0, MIN_LOADING_TIME - (Date.now() - startTime));
 
     const timer = setTimeout(() => {
       setShouldShow(false);
       if (onFadeOutComplete) {
-        // Добавляем 300мс для анимации исчезновения
         setTimeout(onFadeOutComplete, 300);
       }
     }, remainingTime);

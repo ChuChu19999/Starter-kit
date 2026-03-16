@@ -10,6 +10,7 @@ import ElementsList from '../../features/FormItems/ui/ElementsList/ElementsList'
 import FormItem from '../../features/FormItems/ui/FormItem/FormItem';
 import errorAnimation404 from '../../shared/assets/animations/404_1.json';
 import errorAnimation503 from '../../shared/assets/animations/503_1.json';
+import { getDateRangePresets } from '../../shared/lib/datePresets';
 import { zodToFormErrors } from '../../shared/lib/form/zodToFormErrors';
 import Bubble from '../../shared/ui/Bubble/Bubble';
 import Button from '../../shared/ui/Button/Button';
@@ -19,7 +20,15 @@ import {
   DepartmentCard,
   LaboratoryCard,
 } from '../../shared/ui/Cards';
-import { FormWrapper, Input, InputText, RadioGroup, Select } from '../../shared/ui/FormItems';
+import {
+  DatePicker,
+  FormWrapper,
+  Input,
+  InputText,
+  RangePicker,
+  RadioGroup,
+  Select,
+} from '../../shared/ui/FormItems';
 import Layout from '../../shared/ui/Layout/Layout';
 import { Modal } from '../../shared/ui/Modal';
 import Tooltip from '../../shared/ui/Tooltip/Tooltip';
@@ -267,6 +276,26 @@ const ComponentsPage = () => {
                   { label: 'Опция 2', value: '2' },
                 ]}
                 placeholder="Выберите опцию"
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <div className="component-card">
+              <h4>DatePicker</h4>
+              <p className="component-card-description">
+                Выбор одной даты с маской DD.MM.YYYY и русской локалью.
+              </p>
+              <DatePicker placeholder="Выберите дату" style={{ width: '100%' }} />
+            </div>
+
+            <div className="component-card">
+              <h4>RangePicker (с пресетами)</h4>
+              <p className="component-card-description">
+                Выбор диапазона дат с быстрыми пресетами: сегодня, неделя, месяц, кварталы и др.
+              </p>
+              <RangePicker
+                placeholder={['От', 'До']}
+                presets={getDateRangePresets()}
                 style={{ width: '100%' }}
               />
             </div>
