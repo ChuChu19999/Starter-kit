@@ -84,8 +84,8 @@ export class TanstackQueryApiClient {
       queryOptions: queryOptions({
         queryFn: async ({ queryKey, signal }) => {
           const requestParams = {
-            ...(params[0] || {}),
-            ...(queryKey[0] || {}),
+            ...((params[0] as EndpointParameters | undefined) || {}),
+            ...((queryKey[0] as EndpointParameters | undefined) || {}),
             overrides: { signal },
             withResponse: false as const,
           };
@@ -114,8 +114,8 @@ export class TanstackQueryApiClient {
       queryOptions: queryOptions({
         queryFn: async ({ queryKey, signal }) => {
           const requestParams = {
-            ...(params[0] || {}),
-            ...(queryKey[0] || {}),
+            ...((params[0] as EndpointParameters | undefined) || {}),
+            ...((queryKey[0] as EndpointParameters | undefined) || {}),
             overrides: { signal },
             withResponse: false as const,
           };

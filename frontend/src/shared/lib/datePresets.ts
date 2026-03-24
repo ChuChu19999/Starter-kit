@@ -28,9 +28,9 @@ export const getDateRangePresets = (): DateRangePreset[] => {
     ],
   };
 
-  // Неделя (с понедельника по воскресенье текущей недели)
+  // Текущая неделя (с понедельника по воскресенье текущей недели)
   const weekPreset: DateRangePreset = {
-    label: 'Неделя',
+    label: 'Текущая неделя',
     value: [today.clone().startOf('week'), today.clone().endOf('week')],
   };
 
@@ -43,9 +43,9 @@ export const getDateRangePresets = (): DateRangePreset[] => {
     ],
   };
 
-  // Месяц (текущий месяц)
+  // Текущий месяц
   const monthPreset: DateRangePreset = {
-    label: 'Месяц',
+    label: 'Текущий месяц',
     value: [today.clone().startOf('month'), today.clone().endOf('month')],
   };
 
