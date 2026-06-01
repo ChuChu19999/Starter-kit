@@ -4,17 +4,12 @@ backend/.env
 
 # Python
 __pycache__/
-*.py[cod]
 .pytest_cache/
 .mypy_cache/
-*.egg-info/
-.coverage
-htmlcov/
 
 # Frontend
 node_modules/
 frontend/dist/
-frontend/coverage/
 
 # Environment
 .env
@@ -25,8 +20,6 @@ frontend/coverage/
 # IDE
 .idea/
 .vscode/
-*.code-workspace
 
 # Logs & cache
-npm-debug.log*
 .eslintcache
