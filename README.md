@@ -5,25 +5,7 @@
 ## Стек
 
 - **Backend:** FastAPI, Uvicorn, SQLAlchemy (async), asyncpg, Pydantic, Pydantic Settings, Loguru, Pendulum, orjson, PyJWT, pytokens, httpx, python-dotenv, openpyxl (Excel), Swagger UI
-- **Frontend:** React 19, TypeScript, Vite, FSD, React Router, Tanstack React Query, Tanstack Table, Zustand, Ant Design, Axios, Zod, dayjs, Keycloak, Lottie, react-helmet, typed-openapi (генерация API из OpenAPI)
-
-## Автогенерация типов API
-
-Типы и клиент для бэкенд-API получают из OpenAPI-схемы, чтобы фронт и бэк оставались в консистентном состоянии.
-
-1. **Схема с бэкенда.** FastAPI отдаёт OpenAPI по адресу `/api/openapi.json`. Чтобы сохранить схему в репозиторий, из корня `backend` выполните:
-   ```bash
-   python export_openapi.py
-   ```
-   По умолчанию создаётся файл `frontend/openapi.json` (путь можно задать аргументом).
-
-2. **Генерация кода на фронте.** Из каталога `frontend`:
-   ```bash
-   npm run generate:api
-   ```
-   Команда вызывает `typed-openapi` с флагом `--tanstack`: читает `openapi.json` и пишет в `src/shared/api/generated.ts` типы схем (запросы/ответы), типы эндпоинтов и типизованный API-клиент, заточенный под Tanstack Query.
-
-3. **Использование.** В `src/shared/api/apiClient.ts` настроены `api` (клиент из сгенерированного кода) и `tanstackApi` (обёртка под React Query). Запросы идут через общий axios-инстанс (baseURL, Keycloak и т.д.). После изменений на бэкенде нужно заново выполнить шаги 1 и 2.
+- **Frontend:** React 19, TypeScript, Vite, FSD, React Router, Tanstack React Query, Zustand, Ant Design, Axios, Zod, dayjs, Keycloak, Lottie, react-helmet
 
 ## База данных
 

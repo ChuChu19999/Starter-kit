@@ -12,7 +12,7 @@ router = APIRouter()
     summary="Получение информации о текущем пользователе",
     description=(
         "Возвращает информацию о текущем авторизованном пользователе на основе JWT токена. "
-        "Извлекает данные пользователя из токена, включая hashSnils и другие атрибуты."
+        "Извлекает данные пользователя из токена, включая hsnils и другие атрибуты."
     ),
     responses={
         200: {
@@ -20,8 +20,13 @@ router = APIRouter()
             "content": {
                 "application/json": {
                     "example": {
-                        "hashSnils": "e1cee128188b77f382eec32ca80494e6",
-                        "username": "user@example.com",
+                        "personnel_number": "12345",
+                        "department_number": 100,
+                        "full_name": "Тестовый Пользователь",
+                        "ad_login": "user@example.com",
+                        "email": "user@example.com",
+                        "hsnils": "e1cee128188b77f382eec32ca80494e6",
+                        "is_staff": False,
                     }
                 }
             },

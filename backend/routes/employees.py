@@ -1,7 +1,6 @@
-from typing import Optional
 from fastapi import APIRouter, Body, HTTPException, Query
-from pydantic import BaseModel
 from core.security import IsAuthenticated
+from schemas.employees import EmployeeResponse, EmployeesByHashesRequest
 from services.employees import (
     get_employee_by_hash,
     get_employees_by_hashes,
@@ -11,13 +10,9 @@ from services.employees import (
 router = APIRouter()
 
 
-class EmployeesByHashesRequest(BaseModel):
-    hashesMd5: list[str]
-    includePhoto: Optional[bool] = False
-
-
 @router.get(
     "/search/",
+    response_model=list[EmployeeResponse],
     summary="Поиск сотрудников по ФИО",
     description=(
         "Выполняет поиск сотрудников в HR API по части ФИО. "
@@ -31,10 +26,10 @@ class EmployeesByHashesRequest(BaseModel):
                 "application/json": {
                     "example": [
                         {
-                            "hashMd5": "abc123...",
+                            "hashMd5": "abc123def456789012345678901234ab",
                             "fullName": "Иванов Иван Иванович",
                             "department": "Отдел IT",
-                            "photo": "base64...",
+                            "jobTitle": "Разработчик",
                         }
                     ]
                 }
@@ -77,6 +72,7 @@ async def search_employees(
 
 @router.get(
     "/{hash_md5}/",
+    response_model=EmployeeResponse,
     summary="Получение информации о сотруднике",
     description=(
         "Возвращает полную информацию о сотруднике по его hashMd5 (hsnils). "
@@ -88,17 +84,15 @@ async def search_employees(
             "content": {
                 "application/json": {
                     "example": {
-                        "hashMd5": "abc123...",
+                        "hashMd5": "abc123def456789012345678901234ab",
                         "fullName": "Иванов Иван Иванович",
                         "department": "Отдел IT",
                         "division": "Разработка",
                         "login": "ivanov",
-                        "photo": "base64...",
                     }
                 }
             },
         },
-        400: {"description": "Не указан hashMd5"},
         404: {"description": "Сотрудник не найден"},
         503: {"description": "Ошибка при обращении к HR API"},
     },
@@ -115,9 +109,6 @@ async def get_employee(
 
     hashMd5 - это MD5 хэш СНИЛС сотрудника, используемый для идентификации в HR API.
     """
-    if not hash_md5:
-        raise HTTPException(status_code=400, detail="Необходимо указать hashMd5")
-
     try:
         employee = await get_employee_by_hash(hash_md5, include_photo=include_photo)
         if employee is None:
@@ -133,6 +124,7 @@ async def get_employee(
 
 @router.post(
     "/by-hashes/",
+    response_model=dict[str, EmployeeResponse],
     summary="Получение информации о сотрудниках (батч)",
     description=(
         "Возвращает информацию о нескольких сотрудниках по массиву hashMd5. "
@@ -145,13 +137,13 @@ async def get_employee(
             "content": {
                 "application/json": {
                     "example": {
-                        "abc123...": {
-                            "hashMd5": "abc123...",
+                        "abc123def456789012345678901234ab": {
+                            "hashMd5": "abc123def456789012345678901234ab",
                             "fullName": "Иванов Иван Иванович",
                             "department": "Отдел IT",
                         },
-                        "def456...": {
-                            "hashMd5": "def456...",
+                        "def456abc7890123456789012345678cd": {
+                            "hashMd5": "def456abc7890123456789012345678cd",
                             "fullName": "Петров Петр Петрович",
                             "department": "Отдел продаж",
                         },
@@ -172,7 +164,7 @@ async def get_employees_by_hashes_endpoint(
     Принимает массив hashMd5 и возвращает словарь с информацией о найденных сотрудниках.
     Если сотрудник не найден, он не включается в результат.
     """
-    if not request.hashesMd5 or len(request.hashesMd5) == 0:
+    if not request.hashesMd5:
         return {}
 
     try:

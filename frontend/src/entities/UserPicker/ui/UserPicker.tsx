@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { CloseCircleFilled } from '@ant-design/icons';
 import { message } from 'antd';
 import { LoadingCard } from '../../../features/Cards';
-import { api } from '../../../shared/api/apiClient';
+import { employeesApi } from '../../../shared/api/employees';
 import { Input } from '../../../shared/ui/FormItems';
 import './UserPicker.css';
 
@@ -217,10 +217,8 @@ const UserPicker: React.FC<UserPickerProps> = ({
 
       dispatchPicker({ type: 'SET_LOADING', payload: true });
       try {
-        const data = await api.get('/api/employees/search/', {
-          query: { searchFio: text, includePhoto: true },
-        });
-        dispatchPicker({ type: 'SET_OPTIONS', payload: Array.isArray(data) ? data : [] });
+        const data = await employeesApi.searchByFio(text, true);
+        dispatchPicker({ type: 'SET_OPTIONS', payload: data });
       } catch (err) {
         console.error('Ошибка при поиске сотрудников:', err);
         message.error('Не удалось загрузить список сотрудников');

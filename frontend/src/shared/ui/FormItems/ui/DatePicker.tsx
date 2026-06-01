@@ -163,7 +163,7 @@ const DatePicker = (props: DatePickerProps) => {
     };
   }, []);
 
-  const handleChange = (date: unknown, dateString: string | string[]) => {
+  const handleChange = (date: unknown, dateString: string | string[] | null) => {
     if (onChange) {
       onChange(date, dateString);
     }

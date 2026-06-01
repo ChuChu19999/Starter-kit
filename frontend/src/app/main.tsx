@@ -1,7 +1,6 @@
 // Полифилл для Web Crypto API (нужен для Keycloak в HTTP контексте)
 // Keycloak JS 26+ требует Web Crypto API, который доступен только в HTTPS или localhost
 import { Crypto } from '@peculiar/webcrypto';
-import '@ant-design/v5-patch-for-react-19';
 import './index.css';
 import { createRoot } from 'react-dom/client';
 import App from './App';
